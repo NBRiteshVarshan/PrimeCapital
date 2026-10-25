@@ -1,0 +1,133 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#102a43"><title>LoanSaathi AI</title><link rel="manifest" href="/static/manifest.json"><style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:#172b4d;font:16px/1.5 system-ui}header{background:#102a43;color:white;padding:22px max(20px,calc((100% - 1100px)/2));display:flex;justify-content:space-between;gap:12px}.wrap{max-width:1100px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1.5fr 1fr;gap:20px}.panel{background:white;border:1px solid #d9e2ec;border-radius:16px;padding:20px}.notice{background:#fff8e6;border:1px solid #f1d28a;padding:12px;border-radius:10px}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}input,select,button{font:inherit;padding:11px;border:1px solid #cbd5e1;border-radius:9px}input:not([type=checkbox]){flex:1;min-width:160px}button{background:#2563eb;color:white;border:0;cursor:pointer;font-weight:600}.secondary{background:#eaf0f8;color:#102a43}#chat{height:390px;overflow:auto;border:1px solid #d9e2ec;border-radius:12px;padding:12px;margin:12px 0}.bubble{padding:10px 12px;border-radius:12px;margin:8px 0;white-space:pre-wrap;max-width:92%}.user{background:#dbeafe;margin-left:auto}.bot{background:#edf2f7}.meta,.muted{color:#62748a;font-size:.88rem}.product{padding:12px 0;border-bottom:1px solid #d9e2ec}a{color:#2563eb}@media(max-width:760px){.wrap{grid-template-columns:1fr}#chat{height:320px}}
+</style></head><body><header><div><b>LoanSaathi AI</b><div>Evidence-grounded loan enquiry · synthetic demo</div></div><a href="/staff" style="color:white">Staff dashboard →</a></header><div class="wrap"><main class="panel"><h2>Ask about a business loan</h2><div class="notice"><b>AI assistant & consent</b><br>Fictional lender demo. Answers and estimates are illustrative, not an offer or lending decision. Do not enter identity or financial documents. Continuing consents to processing your text for this demo.<div class="row"><label><input id="consent" type="checkbox"> I understand and consent</label><select id="language"><option value="en">English</option><option value="hi">Hindi (text beta)</option><option value="hinglish">Hinglish (text beta)</option></select></div></div><div id="chat" aria-live="polite"><div class="bubble bot">Namaste! Ask me about product fees, eligibility criteria, document checklists, or illustrative EMI estimates.</div></div><div class="row"><input id="message" maxlength="2000" placeholder="Ask a question…"><button id="send">Send</button></div><div class="row"><button class="secondary" id="mic">🎙 Speak</button><button class="secondary" id="speak">🔊 Voice replies: off</button><button class="secondary" id="human">Talk to a person</button><button class="secondary" id="clear">Clear chat</button></div><p class="muted">Speech fills the question box while you speak when browser recognition is supported. Stop recording, review the text, then press Enter or Send. Timbre TTS powers optional voice replies.</p></main><aside class="panel"><h2>Demo products</h2><p class="muted">Synthetic values only.</p><div id="products">Loading…</div><hr><h3>Try asking</h3><ul><li>What are the fees for Working Capital Flex?</li><li>What documents do I need for Equipment Growth Loan?</li><li>Calculate EMI for ₹200000 over 24 months for Working Capital Flex</li><li>What does illustrative mean?</li></ul></aside></div><script>
+const sid=crypto.randomUUID?crypto.randomUUID():"session-"+Date.now(),chat=document.querySelector("#chat");
+function bubble(t,w="bot",src=[]){let d=document.createElement("div");d.className="bubble "+w;d.textContent=t;if(src.length){let m=document.createElement("div");m.className="meta";m.textContent="Evidence: "+src.map(s=>s.source_id+" v"+(s.version||"")).join(", ");d.appendChild(m)}chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
+let voiceReplies=false,recorder=null,recorded=[];
+async function say(text){if(!voiceReplies)return;try{let r=await fetch("/api/speech/synthesize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,language:document.querySelector("#language").value})});if(!r.ok){let d=await r.json();bubble("Voice reply unavailable: "+(d.detail||r.status),"bot");return}let url=URL.createObjectURL(await r.blob());new Audio(url).play()}catch(e){bubble("Could not play voice reply. Check TTS configuration.")}}
+async function send(t){if(!document.querySelector("#consent").checked){alert("Please read the notice and check consent first.");return}if(!t.trim())return;bubble(t,"user");document.querySelector("#message").value="";try{let r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:sid,message:t,language:document.querySelector("#language").value,consent:true})}),d=await r.json();bubble(d.text||d.detail||"No response","bot",d.sources||[]);if(d.text)await say(d.text)}catch(e){bubble("Connection issue. Retry or request a human.")}}
+document.querySelector("#speak").onclick=()=>{voiceReplies=!voiceReplies;document.querySelector("#speak").textContent="🔊 Voice replies: "+(voiceReplies?"on":"off")};
+async function audioBlobToWav(blob){
+  // Chrome/Brave commonly record MediaRecorder audio as WebM/Opus, which the
+  // Gnani REST STT endpoint does not list as supported. Decode in-browser and
+  // upload PCM WAV instead.
+  const arrayBuffer=await blob.arrayBuffer();
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx) throw Error("This browser cannot convert microphone audio to WAV. Try a current Chrome or Edge browser.");
+  const ctx=new AudioCtx();
+  try {
+    const decoded=await ctx.decodeAudioData(arrayBuffer.slice(0));
+    const channels=Math.min(decoded.numberOfChannels,1);
+    const sampleRate=decoded.sampleRate;
+    const samples=decoded.getChannelData(0);
+    const bytesPerSample=2, dataLength=samples.length*bytesPerSample;
+    const wav=new ArrayBuffer(44+dataLength), view=new DataView(wav);
+    const writeString=(offset,str)=>{for(let i=0;i<str.length;i++)view.setUint8(offset+i,str.charCodeAt(i))};
+    writeString(0,"RIFF"); view.setUint32(4,36+dataLength,true); writeString(8,"WAVE");
+    writeString(12,"fmt "); view.setUint32(16,16,true); view.setUint16(20,1,true);
+    view.setUint16(22,channels,true); view.setUint32(24,sampleRate,true);
+    view.setUint32(28,sampleRate*channels*bytesPerSample,true);
+    view.setUint16(32,channels*bytesPerSample,true); view.setUint16(34,16,true);
+    writeString(36,"data"); view.setUint32(40,dataLength,true);
+    let offset=44;
+    for(let i=0;i<samples.length;i++){
+      const s=Math.max(-1,Math.min(1,samples[i]));
+      view.setInt16(offset,s<0?s*0x8000:s*0x7fff,true); offset+=2;
+    }
+    return new Blob([wav],{type:"audio/wav"});
+  } finally { await ctx.close(); }
+}
+let speechRecognition=null, speechBaseText="", speechFinalText="";
+function selectedSpeechLanguage(){
+  const v=document.querySelector("#language").value;
+  return v==="hi" ? "hi-IN" : "en-IN";
+}
+function updateSpeechInput(text){
+  const input=document.querySelector("#message");
+  input.value=(speechBaseText ? speechBaseText.trim()+" " : "")+text.trim();
+  input.focus();
+  input.setSelectionRange(input.value.length,input.value.length);
+}
+function startBrowserSpeechRecognition(){
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition)return false;
+  const btn=document.querySelector("#mic");
+  speechBaseText=document.querySelector("#message").value;
+  speechFinalText="";
+  speechRecognition=new SpeechRecognition();
+  speechRecognition.lang=selectedSpeechLanguage();
+  speechRecognition.continuous=true;
+  speechRecognition.interimResults=true;
+  speechRecognition.onstart=()=>{btn.textContent="■ Stop recording";bubble("Listening… your words will appear in the question box. Click Stop, then press Enter to send.","bot")};
+  speechRecognition.onresult=(event)=>{
+    let interim="";
+    for(let i=0;i<event.results.length;i++){
+      const result=event.results[i];
+      if(result.isFinal)speechFinalText+=result[0].transcript+" ";
+      else interim+=result[0].transcript;
+    }
+    updateSpeechInput(speechFinalText+interim);
+  };
+  speechRecognition.onerror=(event)=>{
+    if(event.error!=="no-speech" && event.error!=="aborted"){
+      bubble("Browser speech recognition error: "+event.error+". Check microphone permission and internet connection, or try Chrome/Edge.","bot");
+    }
+  };
+  speechRecognition.onend=()=>{
+    btn.textContent="🎙 Speak";
+    speechRecognition=null;
+    const input=document.querySelector("#message");
+    if(input.value.trim()) {
+      input.focus();
+      input.setSelectionRange(input.value.length,input.value.length);
+      bubble("Speech converted to text. Review the question box, then press Enter or Send.","bot");
+    }
+  };
+  try{speechRecognition.start();return true}
+  catch(e){speechRecognition=null;return false}
+}
+document.querySelector("#mic").onclick=async()=>{
+  if(!document.querySelector("#consent").checked){alert("Please consent before audio processing.");return}
+  const btn=document.querySelector("#mic");
+  // Prefer browser live speech recognition: interim and final transcript appear
+  // directly in the question input. It avoids the REST ASR upload path entirely.
+  if(speechRecognition){
+    try{speechRecognition.stop()}catch(e){}
+    return;
+  }
+  if(startBrowserSpeechRecognition())return;
+
+  // Fallback for browsers without Web Speech API support: record audio and
+  // transcribe through Gnani Prisma REST, then fill the question box only.
+  if(recorder&&recorder.state==="recording"){recorder.stop();btn.textContent="🎙 Speak";return}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    recorded=[];recorder=new MediaRecorder(stream);
+    recorder.ondataavailable=e=>{if(e.data.size)recorded.push(e.data)};
+    recorder.onstop=async()=>{
+      stream.getTracks().forEach(t=>t.stop());btn.disabled=true;
+      try{
+        const rawBlob=new Blob(recorded,{type:recorder.mimeType||"audio/webm"});
+        const wavBlob=await audioBlobToWav(rawBlob);
+        const fd=new FormData();
+        fd.append("file",wavBlob,"utterance.wav");
+        fd.append("language",document.querySelector("#language").value);
+        fd.append("consent","true");
+        const r=await fetch("/api/speech/transcribe",{method:"POST",body:fd});
+        const d=await r.json();
+        if(!r.ok)throw Error(d.detail||"ASR failed");
+        const input=document.querySelector("#message");
+        const prefix=input.value.trim();
+        input.value=(prefix?prefix+" ":"")+d.text;
+        input.focus();input.setSelectionRange(input.value.length,input.value.length);
+        bubble("Speech converted to text. Review the question box, then press Enter or Send.","bot");
+      }catch(e){bubble("Speech recognition unavailable: "+e.message)}
+      finally{btn.disabled=false}
+    };
+    recorder.start();btn.textContent="■ Stop recording";
+    bubble("Recording… click Stop when you finish speaking.","bot");
+  }catch(e){bubble("Microphone access failed. Allow microphone permission in your browser.")}
+}
+document.querySelector("#send").onclick=()=>send(document.querySelector("#message").value);document.querySelector("#message").onkeydown=e=>{if(e.key==="Enter")send(e.target.value)};document.querySelector("#human").onclick=()=>send("talk to a person");document.querySelector("#clear").onclick=()=>{chat.innerHTML="";bubble("Chat cleared. Demo server may retain audit events until retention is configured.")};
+fetch("/api/products").then(r=>r.json()).then(ps=>{let root=document.querySelector("#products");root.innerHTML="";ps.forEach(p=>{let d=document.createElement("div");d.className="product";d.innerHTML="<b></b><div class='muted'></div>";d.children[0].textContent=p.name;d.children[1].textContent=`₹${p.min_amount.toLocaleString("en-IN")}–₹${p.max_amount.toLocaleString("en-IN")} · ${(p.annual_interest_rate*100).toFixed(1)}% illustrative annual rate`;root.appendChild(d)})});if("serviceWorker"in navigator)navigator.serviceWorker.register("/static/sw.js").catch(()=>{});
+</script></body></html>

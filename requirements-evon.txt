@@ -1,0 +1,5 @@
+# Optional local Evon v3.3 inference dependencies.
+# Install a PyTorch build appropriate for your OS/hardware first if needed.
+transformers>=4.45
+accelerate>=0.34
+torch>=2.4

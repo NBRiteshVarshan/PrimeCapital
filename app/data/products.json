@@ -1,0 +1,95 @@
+[
+  {
+    "id": "WC-FLEX-01",
+    "name": "Working Capital Flex",
+    "category": "working_capital",
+    "status": "approved",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "currency": "INR",
+    "min_amount": 50000,
+    "max_amount": 1500000,
+    "annual_interest_rate": 0.18,
+    "repayment_method": "reducing_balance",
+    "min_tenure_months": 6,
+    "max_tenure_months": 36,
+    "processing_fee_percent": 1.5,
+    "other_fees_inr": 1000,
+    "eligibility_rules": {
+      "min_business_vintage_months": 12,
+      "requires_business_bank_statement": true
+    },
+    "documents": [
+      "PAN of proprietor/directors",
+      "Business registration proof",
+      "Last 6 months business bank statements",
+      "Address proof"
+    ],
+    "source_id": "SYN-PROD-WC-01",
+    "source_title": "Working Capital Flex Product Sheet",
+    "source_version": "1.0",
+    "description": "Illustrative working-capital facility for eligible small businesses."
+  },
+  {
+    "id": "EQ-TERM-01",
+    "name": "Equipment Growth Loan",
+    "category": "equipment",
+    "status": "approved",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "currency": "INR",
+    "min_amount": 100000,
+    "max_amount": 3000000,
+    "annual_interest_rate": 0.16,
+    "repayment_method": "reducing_balance",
+    "min_tenure_months": 12,
+    "max_tenure_months": 60,
+    "processing_fee_percent": 1.0,
+    "other_fees_inr": 1500,
+    "eligibility_rules": {
+      "min_business_vintage_months": 24,
+      "requires_business_bank_statement": true
+    },
+    "documents": [
+      "PAN of proprietor/directors",
+      "Business registration proof",
+      "Equipment quotation",
+      "Last 12 months business bank statements",
+      "Address proof"
+    ],
+    "source_id": "SYN-PROD-EQ-01",
+    "source_title": "Equipment Growth Product Sheet",
+    "source_version": "1.0",
+    "description": "Illustrative term loan for business equipment purchases."
+  },
+  {
+    "id": "MER-OD-01",
+    "name": "Merchant Overdraft",
+    "category": "merchant_overdraft",
+    "status": "approved",
+    "version": "1.0",
+    "effective_date": "2026-01-01",
+    "currency": "INR",
+    "min_amount": 25000,
+    "max_amount": 750000,
+    "annual_interest_rate": 0.21,
+    "repayment_method": "reducing_balance",
+    "min_tenure_months": 6,
+    "max_tenure_months": 24,
+    "processing_fee_percent": 2.0,
+    "other_fees_inr": 500,
+    "eligibility_rules": {
+      "min_business_vintage_months": 6,
+      "requires_business_bank_statement": true
+    },
+    "documents": [
+      "PAN of proprietor/directors",
+      "Business registration proof",
+      "Last 6 months business bank statements"
+    ],
+    "source_id": "SYN-PROD-MER-01",
+    "source_title": "Merchant Overdraft Product Sheet",
+    "source_version": "1.0",
+    "description": "Illustrative overdraft-style product for merchants."
+  }
+]

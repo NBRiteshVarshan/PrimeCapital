@@ -1,0 +1,153 @@
+"""Gnani Prisma v2.5 ASR / Timbre v2.5 TTS REST adapters.
+
+Endpoints and payloads follow Gnani's published Speech API documentation.
+Keep credentials in .env; never hard-code or commit API keys.
+"""
+from dataclasses import dataclass
+import httpx
+from . import config
+
+
+@dataclass
+class SpeechResult:
+    text: str
+    provider: str = "gnani-prisma-v2.5"
+
+
+class ProviderNotConfigured(RuntimeError):
+    pass
+
+
+def _api_key_headers():
+    if not config.GNANI_API_KEY:
+        raise ProviderNotConfigured(
+            "Gnani API key is missing. Set GNANI_API_KEY in your .env file."
+        )
+    # Current Gnani Speech APIs document X-API-Key-ID (not Bearer auth).
+    return {config.GNANI_API_KEY_HEADER or "X-API-Key-ID": config.GNANI_API_KEY}
+
+
+def _language_code(language: str) -> str:
+    return {
+        "en": "en-IN",
+        "hi": "hi-IN",
+        "hinglish": "hi-en",
+        "en-IN": "en-IN",
+        "hi-IN": "hi-IN",
+        "hi-en": "hi-en",
+    }.get(language, "en-IN")
+
+
+class GnaniSpeechProvider:
+    """Prisma v2.5 speech-to-text and Timbre v2.5 text-to-speech adapter."""
+
+    def __init__(self):
+        self.asr_url = config.GNANI_ASR_URL
+        self.tts_url = config.GNANI_TTS_URL
+        self.timeout = config.GNANI_HTTP_TIMEOUT_SECONDS
+
+    def transcribe(
+        self, audio_bytes: bytes, language: str = "en",
+        filename: str = "utterance.wav"
+    ) -> SpeechResult:
+        if not self.asr_url:
+            raise ProviderNotConfigured("Prisma ASR is not configured. Set GNANI_ASR_URL in .env.")
+        if not audio_bytes:
+            raise ValueError("Audio payload is empty.")
+
+        # Gnani documents audio_file + language_code as multipart fields.
+        files = {
+            "audio_file": (
+                filename, audio_bytes, "application/octet-stream"
+            )
+        }
+        data = {
+            "language_code": _language_code(language),
+            "format": "transcribe",
+        }
+        with httpx.Client(timeout=self.timeout) as client:
+            response = client.post(
+                self.asr_url, headers=_api_key_headers(), files=files, data=data
+            )
+            if response.is_error:
+                detail = response.text[:500]
+                raise RuntimeError(f"Gnani ASR HTTP {response.status_code}: {detail}")
+
+        try:
+            payload = response.json()
+        except ValueError:
+            payload = None
+        if isinstance(payload, dict):
+            if payload.get("success") is False:
+                error = payload.get("error", {})
+                if isinstance(error, dict):
+                    message = error.get("message", "Gnani ASR reported an error.")
+                    error_type = error.get("type", "API_ERROR")
+                    raise ValueError(f"Gnani ASR {error_type}: {message}")
+                raise ValueError("Gnani ASR reported an error.")
+            transcript = payload.get("transcript") or payload.get("text")
+            if isinstance(transcript, str) and transcript.strip():
+                return SpeechResult(text=transcript.strip())
+            raise ValueError("Gnani ASR response did not contain a transcript.")
+        transcript = response.text.strip()
+        if not transcript:
+            raise ValueError("ASR returned an empty transcript.")
+        return SpeechResult(text=transcript)
+
+    def synthesize(self, text: str, language: str = "en") -> bytes:
+        if not self.tts_url:
+            raise ProviderNotConfigured("Timbre TTS is not configured. Set GNANI_TTS_URL in .env.")
+        if not text.strip():
+            raise ValueError("Text to synthesize is empty.")
+
+        # Gnani TTS REST returns raw audio bytes (WAV with this audio_config).
+        payload = {
+            "text": text,
+            "model": config.GNANI_TTS_MODEL or "timbre-v2.5",
+            "voice": config.GNANI_TTS_VOICE or "Kaveri",
+            "language": _language_code(language),
+            "speed": 1.0,
+            "audio_config": {
+                "encoding": "linear_pcm",
+                "container": "wav",
+                "num_channels": 1,
+                "sample_rate": config.GNANI_TTS_SAMPLE_RATE,
+                "sample_width": 2,
+            },
+        }
+        with httpx.Client(timeout=self.timeout) as client:
+            response = client.post(
+                self.tts_url,
+                headers={**_api_key_headers(), "Content-Type": "application/json"},
+                json=payload,
+            )
+            response.raise_for_status()
+        content_type = response.headers.get("content-type", "").lower()
+        if content_type.startswith("audio/") or "octet-stream" in content_type:
+            if not response.content:
+                raise ValueError("Gnani TTS returned an empty audio response.")
+            return response.content
+        raise ValueError(
+            f"Gnani TTS returned unexpected content type '{content_type or 'unknown'}'; expected audio/wav."
+        )
+
+
+class SpeechProvider:
+    """Compatibility interface used by the application."""
+
+    def __init__(self):
+        self._provider = GnaniSpeechProvider()
+
+    def transcribe(self, audio_bytes: bytes, language: str = "en", filename: str = "utterance.wav"):
+        return self._provider.transcribe(audio_bytes, language, filename)
+
+    def synthesize(self, text: str, language: str = "en"):
+        return self._provider.synthesize(text, language)
+
+
+class TextFallback:
+    def transcribe(self, audio_bytes: bytes, language: str = "en"):
+        raise ProviderNotConfigured("Speech is not configured. Use text input or configure Gnani Prisma.")
+
+    def synthesize(self, text: str, language: str = "en"):
+        raise ProviderNotConfigured("Speech is not configured. Use transcript output or configure Gnani Timbre.")

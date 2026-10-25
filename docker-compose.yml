@@ -1,0 +1,7 @@
+services:
+  loansaathi:
+    build: .
+    ports: ["8000:8000"]
+    volumes: ["./runtime:/app/runtime"]
+    environment:
+      LOANSAATHI_AUDIT_PATH: /app/runtime/audit.jsonl

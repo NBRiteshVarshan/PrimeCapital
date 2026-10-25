@@ -1,0 +1,42 @@
+[
+  {
+    "id": "FAQ-001",
+    "title": "What is a processing fee?",
+    "text": "A processing fee is a charge for processing a loan enquiry or application. Demo fees are listed on each approved product record. Confirm final charges with lender staff.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-001"
+  },
+  {
+    "id": "FAQ-002",
+    "title": "Are these terms guaranteed?",
+    "text": "No. Product information and calculator outputs are illustrative only and are not an approval, offer, or guarantee of eligibility. A lender representative must confirm final terms.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-002"
+  },
+  {
+    "id": "FAQ-003",
+    "title": "How does an EMI estimate work?",
+    "text": "For a reducing-balance illustration, monthly interest is based on outstanding principal. The estimate is illustrative and not an offer.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-003"
+  },
+  {
+    "id": "FAQ-004",
+    "title": "What happens after an enquiry?",
+    "text": "A staff member can review the enquiry summary, clarify questions, and explain next steps. An enquiry is not a lending decision.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-004"
+  }
+]
