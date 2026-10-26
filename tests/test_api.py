@@ -18,3 +18,17 @@ def test_health_reports_model_configuration():
 def test_evon_endpoint_requires_configuration():
     r=client.post("/api/ai/interpret",json={"message":"What are the fees?","language":"en"})
     assert r.status_code in (200,503)
+
+
+def test_supabase_status_is_safe_when_unconfigured():
+    from app import config
+    if not config.SUPABASE_ENABLED:
+        r = client.get("/api/supabase/status")
+        assert r.status_code == 200
+        assert r.json()["configured"] is False
+
+def test_products_endpoint_shape():
+    r = client.get("/api/products")
+    assert r.status_code == 200
+    assert isinstance(r.json(), list)
+    assert len(r.json()) >= 1

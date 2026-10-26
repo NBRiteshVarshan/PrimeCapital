@@ -36,3 +36,10 @@ EVON_HF_MODEL_ID = os.getenv("EVON_HF_MODEL_ID", "gnani/gnani-evon-v3.3-30B-A3B"
 EVON_MAX_NEW_TOKENS = int(os.getenv("EVON_MAX_NEW_TOKENS", "256"))
 EVON_TEMPERATURE = float(os.getenv("EVON_TEMPERATURE", "0.0"))
 EVON_TRUST_REMOTE_CODE = os.getenv("EVON_TRUST_REMOTE_CODE", "false").strip().lower() == "true"
+
+
+# Optional Supabase backend. Keep the service-role key server-side only.
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
+SUPABASE_ENABLED = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+SUPABASE_HTTP_TIMEOUT_SECONDS = float(os.getenv("SUPABASE_HTTP_TIMEOUT_SECONDS", "10"))

@@ -5,6 +5,8 @@ from .calculator import calculate_emi
 from .guardrails import check_response
 from .store import create_enquiry
 from .audit import write_event
+from . import config
+from . import supabase_data
 _sessions={}
 def sess(sid):return _sessions.setdefault(sid,{"state":"DISCOVERY","pending":None,"turns":0})
 def detect_product(msg):
@@ -32,6 +34,76 @@ def respond(sid,message,language="en"):
    except ValueError as ex:return {"text":str(ex),"state":"CLARIFY","sources":[]}
   if low in {"cancel","no","wrong","nahi","नहीं"}:s["pending"]=None;s["state"]="CLARIFY";return {"text":"No calculation made. Correct the amount, tenure, or product and try again.","state":s["state"],"sources":[]}
   return {"text":"Reply `confirm` if correct, or `cancel` and enter the values again.","state":"CLARIFY","sources":[]}
+ # When configured, the synthetic SBI database is the source of truth for bank-specific facts.
+ if config.SUPABASE_ENABLED:
+  db_intent = None
+  if any(k in low for k in ["document", "paperwork", "required file", "checklist"]): db_intent = "documents"
+  elif any(k in low for k in ["eligib", "qualify", "eligible", "criteria", "turnover", "business vintage", "age requirement"]): db_intent = "eligibility"
+  elif any(k in low for k in ["fee", "charge", "processing"]): db_intent = "fees"
+  elif any(k in low for k in ["rate", "interest", "limit", "amount", "product", "loan", "business loans", "types of loans", "what loans", "working capital", "equipment", "overdraft", "term loan", "merchant", "msme"]): db_intent = "product"
+  if db_intent:
+   try:
+    aliases = [("working capital", ["working capital", "working-capital", "wc"]),
+               ("equipment", ["equipment", "machinery", "equipment finance"]),
+               ("overdraft", ["overdraft", "merchant overdraft", "od"]),
+               ("term loan", ["term loan", "msme loan", "business term"])]
+    search_term = None
+    for term, words in aliases:
+     if any(w in low for w in words): search_term = term; break
+    # Fetch the complete, small synthetic catalogue first. Filtering in Python
+    # avoids false negatives when Postgres RPC text matching differs from aliases.
+    all_db_rows = supabase_data.lookup_products(None)
+    def norm(value):
+     return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
+    aliases = {
+     "working capital": ("working capital", "working-capital", "wc flex", "wc"),
+     "equipment": ("equipment", "machinery", "equipment finance", "equipment growth"),
+     "overdraft": ("overdraft", "merchant overdraft", "merchant", " od "),
+     "term loan": ("term loan", "msme loan", "business term", "msme term"),
+    }
+    if search_term:
+     terms = aliases.get(search_term, (search_term,))
+     db_rows = [r for r in all_db_rows if any(norm(term) in norm(r.get("product_name")) or norm(term) in norm(r.get("product_category")) or (term == "working capital" and "wc" in norm(r.get("product_code"))) for term in terms)]
+    else:
+     db_rows = all_db_rows
+    # If the user asked for the catalogue, list it instead of asking for one product.
+    is_catalogue_question = any(k in low for k in ["what type", "what types", "types of", "which loans", "what loans", "available", "all products", "list products", "business loans available"])
+    if not db_rows:
+     return {"text":"I couldn’t match that product in the synthetic demo database. Please try Working Capital Flex, MSME Term Loan, Equipment Growth Loan, or Merchant Overdraft.","state":"CLARIFY","sources":[]}
+    if is_catalogue_question and len(db_rows) > 1:
+     names = "; ".join(f"{r.get('product_name')} (code {r.get('product_code')})" for r in db_rows)
+     return {"text":f"The synthetic demo catalogue contains: {names}. These are fictional training records, not official SBI products or offers.","state":"FACT_ANSWER","sources":[{"source_id":r.get("source_code"),"type":"synthetic_database_record","product_code":r.get("product_code"),"data_label":"synthetic_demo"} for r in db_rows]}
+    if len(db_rows) > 1 and search_term is None:
+     names = "; ".join(r.get("product_name", "Demo product") for r in db_rows)
+     return {"text":f"I found these synthetic demo products: {names}. Which one would you like to know about? These are not official SBI offers.","state":"CLARIFY","sources":[{"source_id":r.get("source_code"),"type":"synthetic_database_record"} for r in db_rows]}
+    row = db_rows[0]
+    code = row.get("product_code", "")
+    source = [{"source_id":row.get("source_code"),"type":"synthetic_database_record","product_code":code,"data_label":"synthetic_demo"}]
+    name = row.get("product_name", "Synthetic demo product")
+    disclaimer = " These figures are synthetic training data, not official SBI terms or an offer; confirm real terms with the bank."
+    if db_intent == "documents":
+     docs = supabase_data.list_documents(code)
+     if not docs: return {"text":"No document checklist was found in the synthetic database. Please confirm requirements with staff.","state":"ESCALATE","sources":source}
+     doc_text = "; ".join(d["document_name"] + (" ("+d["required_status"]+")" if d.get("required_status") else "") for d in docs)
+     return {"text":f"Synthetic document checklist for {name}: {doc_text}.{disclaimer}","state":"DOCUMENTS","sources":source}
+    if db_intent == "eligibility":
+     rules = supabase_data.list_eligibility_rules(code)
+     if not rules: return {"text":"No eligibility rules were found in the synthetic database. Please confirm requirements with staff.","state":"ESCALATE","sources":source}
+     rule_text = "; ".join(r.get("explanation", r.get("rule_name", "Rule")) for r in rules)
+     return {"text":f"Synthetic preliminary criteria for {name}: {rule_text} These criteria do not determine eligibility or guarantee approval.{disclaimer}","state":"FACT_ANSWER","sources":source}
+    if db_intent == "fees":
+     fees = supabase_data.list_fees(code)
+     if not fees: return {"text":f"I couldn’t find fee details for {name} in the synthetic database. Please confirm with staff.{disclaimer}","state":"ESCALATE","sources":source}
+     fee_text = "; ".join(f"{f.get('fee_name')}: {f.get('conditions')}" for f in fees)
+     return {"text":f"Synthetic fee details for {name}: {fee_text}.{disclaimer}","state":"FACT_ANSWER","sources":source}
+    rate = row.get("indicative_annual_rate_pct")
+    rate_text = f"indicative annual rate {float(rate):.2f}%" if rate is not None else "no indicative annual rate listed"
+    amount_text = f"amount range ₹{float(row.get('min_amount_inr') or 0):,.0f}–₹{float(row.get('max_amount_inr') or 0):,.0f}"
+    tenure_text = "tenure not listed" if row.get("min_tenure_months") is None else f"tenure {row.get('min_tenure_months')}–{row.get('max_tenure_months')} months"
+    return {"text":f"{name}: {rate_text}; {amount_text}; {tenure_text}. {row.get('description','')}{disclaimer}","state":"FACT_ANSWER","sources":source}
+   except Exception as ex:
+    write_event("supabase_retrieval_error", session_id=sid, error_type=type(ex).__name__)
+    return {"text":"I can’t access the synthetic product records right now, so I won’t guess the details. Please try again or request staff assistance.","state":"ESCALATE","sources":[]}
  p=detect_product(raw)
  if any(k in low for k in ["emi","calculate","monthly payment","repayment estimate"]):
   if not p:return {"text":"Which product: Working Capital Flex, Equipment Growth Loan, or Merchant Overdraft?","state":"CLARIFY","sources":[]}

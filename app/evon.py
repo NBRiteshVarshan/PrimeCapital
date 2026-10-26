@@ -66,6 +66,8 @@ def _load_local():
         # The pipeline route mirrors the provided Hugging Face example.
         # For explicit device_map control, use the AutoTokenizer/AutoModel path.
         try:
+            # Match the Hugging Face chat-template interface: pipe(messages).
+            # The pipeline is initialized once and reused across requests.
             _pipeline = pipeline(
                 "text-generation",
                 model=model_id,
@@ -86,14 +88,27 @@ def _interpret_local(message: str, language: str) -> dict:
         {"role": "user", "content": json.dumps({"message": message, "language": language}, ensure_ascii=False)},
     ]
     with _model_lock:
-        result = _pipeline(messages, max_new_tokens=config.EVON_MAX_NEW_TOKENS, do_sample=False)
-    # Transformers chat pipelines commonly return generated_text as a message list.
+        result = _pipeline(
+            messages,
+            max_new_tokens=config.EVON_MAX_NEW_TOKENS,
+            do_sample=False,
+            return_full_text=True,
+        )
+    # Chat-capable Transformers pipelines usually return generated_text as a
+    # list of role/content messages. Some model/pipeline versions return text.
     generated = result[0].get("generated_text", result[0]) if result else None
     if isinstance(generated, list):
-        assistant_messages = [m for m in generated if isinstance(m, dict) and m.get("role") == "assistant"]
+        assistant_messages = [
+            item for item in generated
+            if isinstance(item, dict) and item.get("role") == "assistant"
+        ]
         content = assistant_messages[-1].get("content", "") if assistant_messages else ""
     elif isinstance(generated, str):
+        # When a pipeline returns the serialized prompt plus completion, keep
+        # the last JSON object; _parse_json safely validates its schema.
         content = generated
+    elif isinstance(generated, dict):
+        content = generated.get("content", "")
     else:
         content = ""
     return _parse_json(content)

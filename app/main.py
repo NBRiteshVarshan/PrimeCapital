@@ -12,6 +12,8 @@ from .store import create_enquiry,list_enquiries,update_enquiry
 from .audit import write_event,read_events
 from .speech import SpeechProvider, ProviderNotConfigured
 from .evon import interpret as evon_interpret, EvonNotConfigured
+from . import config as app_config
+from . import supabase_data
 app=FastAPI(title="LoanSaathi AI",version="0.1.0",description="Evidence-grounded fictional loan enquiry assistant")
 app.mount("/static",StaticFiles(directory=str(STATIC_DIR)),name="static")
 reqs=defaultdict(deque)
@@ -43,13 +45,41 @@ def staff():return FileResponse(STATIC_DIR/"staff.html")
 @app.get("/api/health")
 def health():
  from . import config
- return {"status":"ok","mode":"synthetic_demo",
+ db_status = {"configured": config.SUPABASE_ENABLED, "reachable": False, "products_returned": 0}
+ if config.SUPABASE_ENABLED:
+  try: db_status = supabase_data.health_check()
+  except Exception: db_status = {"configured": True, "reachable": False, "products_returned": 0}
+ return {"status":"ok","mode":"synthetic_demo","supabase":db_status,
          "speech":{"asr":"configured" if config.GNANI_ASR_URL else "not_configured",
                    "tts":"configured" if config.GNANI_TTS_URL else "not_configured",
                    "asr_model":"Prisma v2.5","tts_model":"Timbre v2.5"},
          "reasoning_model":{"name":"Evon v3.3","backend":config.EVON_BACKEND,"model_id":config.EVON_HF_MODEL_ID if config.EVON_BACKEND == "local" else config.EVON_MODEL_NAME,"mode":"configured" if (config.EVON_BACKEND == "local" or (config.EVON_CHAT_COMPLETIONS_URL and config.EVON_API_KEY)) else "not_configured"}}
 @app.get("/api/products")
-def products():return [public_product(p) for p in all_products()]
+def products():
+    if app_config.SUPABASE_ENABLED:
+        try:
+            rows = supabase_data.lookup_products(None)
+            return [{
+                "id": r.get("product_code"), "name": r.get("product_name"),
+                "category": r.get("product_category"), "currency": "INR",
+                "min_amount": r.get("min_amount_inr"), "max_amount": r.get("max_amount_inr"),
+                "annual_interest_rate": float(r["indicative_annual_rate_pct"]) / 100 if r.get("indicative_annual_rate_pct") is not None else None,
+                "min_tenure_months": r.get("min_tenure_months"), "max_tenure_months": r.get("max_tenure_months"),
+                "collateral_required": r.get("collateral_required"), "description": r.get("description"),
+                "source_id": r.get("source_code"), "source_title": "Synthetic SBI-style MSME training policy pack",
+                "source_version": "v1.0", "synthetic_demo": True,
+                "notice": "Synthetic training data only; not an official SBI offer."
+            } for r in rows]
+        except supabase_data.SupabaseDataError as ex:
+            raise HTTPException(503, str(ex))
+    return [public_product(p) for p in all_products()]
+
+@app.get("/api/supabase/status")
+def supabase_status():
+    if not app_config.SUPABASE_ENABLED:
+        return {"configured": False, "reachable": False, "message": "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the backend environment."}
+    try: return supabase_data.health_check()
+    except Exception: raise HTTPException(503, "Supabase is configured but the lookup failed. Verify backend credentials and RPC permissions.")
 @app.post("/api/chat")
 def chat(p:ChatIn,request:Request):
  if not p.consent:raise HTTPException(403,"Consent is required before collecting enquiry details.")
