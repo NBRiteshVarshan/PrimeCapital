@@ -7,7 +7,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "app" / "data"
 STATIC_DIR = BASE_DIR / "app" / "static"
-AUDIT_PATH = Path(os.getenv("LOANSAATHI_AUDIT_PATH", str(BASE_DIR / "runtime" / "audit.jsonl")))
+AUDIT_PATH = Path(os.getenv("PRIME_CAPITAL_AUDIT_PATH", os.getenv("LOANSAATHI_AUDIT_PATH", str(BASE_DIR / "runtime" / "audit.jsonl"))))
 
 # Official Gnani Speech APIs (documented REST endpoints).
 GNANI_ASR_URL = os.getenv("GNANI_ASR_URL", "https://api.vachana.ai/stt/v3").strip()

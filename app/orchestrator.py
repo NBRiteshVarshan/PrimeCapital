@@ -67,7 +67,7 @@ def respond(sid,message,language="en"):
     else:
      db_rows = all_db_rows
     # If the user asked for the catalogue, list it instead of asking for one product.
-    is_catalogue_question = any(k in low for k in ["what type", "what types", "types of", "which loans", "what loans", "available", "all products", "list products", "business loans available"])
+    is_catalogue_question = any(k in low for k in ["what type", "what types", "types of", "which loans", "what loans", "loan options", "loan option", "options available", "available loans", "available loan", "all products", "list products", "business loans available"])
     if not db_rows:
      return {"text":"I couldn’t match that product in the synthetic demo database. Please try Working Capital Flex, MSME Term Loan, Equipment Growth Loan, or Merchant Overdraft.","state":"CLARIFY","sources":[]}
     if is_catalogue_question and len(db_rows) > 1:
@@ -104,6 +104,35 @@ def respond(sid,message,language="en"):
    except Exception as ex:
     write_event("supabase_retrieval_error", session_id=sid, error_type=type(ex).__name__)
     return {"text":"I can’t access the synthetic product records right now, so I won’t guess the details. Please try again or request staff assistance.","state":"ESCALATE","sources":[]}
+
+ # Answer general loan-catalogue questions from approved local product records.
+ # These records are synthetic demo data, not official lender offers.
+ is_local_catalogue_question = any(
+  phrase in low for phrase in [
+   "loan options", "loan option", "what loans", "which loans",
+   "types of loan", "types of loans", "available loans",
+   "available loan", "what are the loan", "business loan options",
+   "list loans", "list products"
+  ]
+ )
+ if is_local_catalogue_question:
+  products = all_products()
+  if not products:
+   return {"text":"No approved demo loan products are currently available. Please request staff assistance.","state":"ESCALATE","sources":[]}
+  product_names = "; ".join(p["name"] for p in products)
+  return {
+   "text": (
+    f"The approved PrimeCapital demo catalogue currently includes: {product_names}. "
+    "These are synthetic demonstration records, not official bank products, offers, "
+    "or lending decisions. I can explain any one of these options if you tell me its name."
+   ),
+   "state":"FACT_ANSWER",
+   "sources":[
+    {"source_id":p["source_id"],"version":p["source_version"],"type":"structured_product_fact","product_id":p["id"]}
+    for p in products
+   ]
+  }
+
  p=detect_product(raw)
  if any(k in low for k in ["emi","calculate","monthly payment","repayment estimate"]):
   if not p:return {"text":"Which product: Working Capital Flex, Equipment Growth Loan, or Merchant Overdraft?","state":"CLARIFY","sources":[]}

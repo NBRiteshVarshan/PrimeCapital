@@ -1,4 +1,4 @@
-# LoanSaathi AI — Supabase integration
+# PrimeCapital — Supabase integration
 
 This project is a voice-first **synthetic loan-enquiry demo**. The SBI-labelled products and policy facts in the training database are invented test data, not official State Bank of India products or lending terms.
 
@@ -32,4 +32,4 @@ This project is a voice-first **synthetic loan-enquiry demo**. The SBI-labelled 
 
 
 ## Frontend refresh
-The borrower UI has been refreshed to a responsive blue-and-white LoanSaathi experience with consent, language selection, chat, voice controls, product cards, and quick-question shortcuts. The staff dashboard has matching styling. WhatsApp delivery and scheduled follow-up are not implemented by this visual refresh; they require a configured provider and backend workflow.
+The borrower UI has been refreshed to a responsive blue-and-white PrimeCapital experience with consent, language selection, chat, voice controls, product cards, and quick-question shortcuts. The staff dashboard has matching styling. Telegram bot access and scheduled follow-up are not implemented by this visual refresh; they require a configured provider and backend workflow.

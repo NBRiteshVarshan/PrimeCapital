@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102b4c">
-  <meta name="description" content="LoanSaathi AI — a voice-first synthetic business loan enquiry demo.">
-  <title>LoanSaathi AI | Business Loan Assistant</title>
+  <meta name="description" content="PrimeCapital — a voice-first synthetic business loan enquiry demo.">
+  <title>PrimeCapital | Business Loan Assistant</title>
 
   <style>
     :root {
@@ -321,7 +321,7 @@
 <body>
   <header>
     <div class="brand">
-      LoanSaathi AI
+      PrimeCapital
       <small>Evidence-grounded loan enquiry · Synthetic demo</small>
     </div>
     <nav class="toplinks" aria-label="Main navigation">
@@ -393,7 +393,7 @@
 
       <div id="chat" role="log" aria-live="polite" aria-label="Chat messages">
         <div class="bubble bot">
-          Namaste! 👋 Welcome to LoanSaathi.
+          Namaste! 👋 Welcome to PrimeCapital.
           I can help you explore synthetic demo loan products, understand
           illustrative fees and eligibility criteria, estimate EMIs, and review
           document checklists.
@@ -493,10 +493,10 @@
 
       <div class="actions">
         <button type="button" class="secondary" id="copyChecklistButton">Copy checklist</button>
-        <button type="button" class="quiet" id="whatsappButton">Open WhatsApp</button>
+        <button type="button" class="quiet" id="telegramButton">Open Telegram</button>
       </div>
       <p class="helper">
-        WhatsApp opens a draft message only. This demo does not upload documents
+        Telegram opens the PrimeCapital assistant bot. This demo does not upload documents
         or automatically submit a loan application.
       </p>
     </section>
@@ -537,14 +537,14 @@
   </main>
 
   <footer>
-    <span>Powered by Gnani AI 🇮🇳 · LoanSaathi AI demo</span>
+    <span>Powered by Gnani AI 🇮🇳 · PrimeCapital demo</span>
     <span>Synthetic data · No loan approval or financial advice</span>
   </footer>
 
   <script>
       function getSessionId() {
-        const key = "loansaathi_session_id";
-        let sessionId = sessionStorage.getItem(key);
+        const key = "primecapital_session_id";
+        let sessionId = sessionStorage.getItem(key) || sessionStorage.getItem("loansaathi_session_id");
 
         if (!sessionId) {
           sessionId = crypto.randomUUID();
@@ -912,7 +912,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            message: "User requested a human handoff from the LoanSaathi demo.",
+            message: "User requested a human handoff from the PrimeCapital demo.",
             consent: true,
             business_category: selectedBusinessCategory || null
           })
@@ -944,7 +944,7 @@
         .map((node) => node.textContent);
 
       const text = [
-        "LoanSaathi AI — Illustrative document checklist",
+        "PrimeCapital — Illustrative document checklist",
         ...items.map((item) => `${item}: ${[...document.querySelectorAll("#documentChecklist .doc-text strong")].some((node, i) => node.textContent === item && document.querySelectorAll("#documentChecklist input")[i].checked) ? "Ready" : "Not marked ready"}`),
         "",
         "Synthetic demo only. Confirm actual document requirements with the lender."
@@ -958,21 +958,14 @@
       }
     }
 
-    function openWhatsAppDraft() {
-      const message = [
-        "Hello, I am using the LoanSaathi AI demo.",
-        "I would like to discuss the illustrative business-loan document checklist.",
-        "Please confirm the official document requirements and secure submission process."
-      ].join("\n");
-
-      const url = "https://wa.me/?text=" + encodeURIComponent(message);
-      window.open(url, "_blank", "noopener,noreferrer");
+    function openTelegramBot() {
+      window.open("https://t.me/PrimeCapital_Assistant_Bot", "_blank", "noopener,noreferrer");
     }
 
     function clearChat() {
       $("#chat").replaceChildren();
       addMessage(
-        "Namaste! Welcome to LoanSaathi. Ask me about synthetic demo loan products, fees, eligibility, documents, or EMI estimates.",
+        "Namaste! Welcome to PrimeCapital. Ask me about synthetic demo loan products, fees, eligibility, documents, or EMI estimates.",
         "bot"
       );
     }
@@ -983,7 +976,7 @@
     $("#speakButton").addEventListener("click", toggleMicrophone);
     $("#handoffButton").addEventListener("click", requestHumanHandoff);
     $("#copyChecklistButton").addEventListener("click", copyChecklist);
-    $("#whatsappButton").addEventListener("click", openWhatsAppDraft);
+    $("#telegramButton").addEventListener("click", openTelegramBot);
     $("#clearButton").addEventListener("click", clearChat);
 
     $("#voiceReplyButton").addEventListener("click", () => {

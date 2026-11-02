@@ -14,7 +14,7 @@ from .speech import SpeechProvider, ProviderNotConfigured
 from .evon import interpret as evon_interpret, EvonNotConfigured
 from . import config as app_config
 from . import supabase_data
-app=FastAPI(title="LoanSaathi AI",version="0.1.0",description="Evidence-grounded fictional loan enquiry assistant")
+app=FastAPI(title="PrimeCapital",version="0.1.0",description="Evidence-grounded fictional loan enquiry assistant")
 app.mount("/static",StaticFiles(directory=str(STATIC_DIR)),name="static")
 reqs=defaultdict(deque)
 @app.middleware("http")

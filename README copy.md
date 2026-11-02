@@ -1,4 +1,4 @@
-# LoanSaathi AI
+# PrimeCapital
 A runnable safety-first MVP for a fictional small-business lender. It provides product facts, source-linked FAQ retrieval, Decimal EMI calculations with read-back confirmation, consent gating, escalation queue, staff dashboard, audit log, and tests.
 
 ## Run

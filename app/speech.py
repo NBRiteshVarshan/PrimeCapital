@@ -27,7 +27,26 @@ def _api_key_headers():
     return {config.GNANI_API_KEY_HEADER or "X-API-Key-ID": config.GNANI_API_KEY}
 
 
-def _language_code(language: str) -> str:
+def _asr_language_code(language: str) -> str:
+    """Return a BCP-47 locale accepted by the Prisma REST endpoint.
+
+    Prisma supports Hinglish/code-switching, but the REST API's
+    language_code field uses a locale such as hi-IN or en-IN.
+    Use Hindi as the anchor locale for Hinglish utterances; the model
+    handles English words through its code-switching capability.
+    """
+    return {
+        "en": "en-IN",
+        "hi": "hi-IN",
+        "hinglish": "hi-IN",
+        "hi-en": "hi-IN",
+        "en-IN": "en-IN",
+        "hi-IN": "hi-IN",
+    }.get(language, "hi-IN" if language == "hinglish" else "en-IN")
+
+
+def _tts_language_code(language: str) -> str:
+    """Keep TTS language selection independent from Prisma ASR locales."""
     return {
         "en": "en-IN",
         "hi": "hi-IN",
@@ -56,18 +75,29 @@ class GnaniSpeechProvider:
             raise ValueError("Audio payload is empty.")
 
         # Gnani documents audio_file + language_code as multipart fields.
+        file_field = config.GNANI_ASR_FILE_FIELD or "audio_file"
+        language_field = config.GNANI_ASR_LANGUAGE_FIELD or "language_code"
+        asr_locale = _asr_language_code(language)
+
         files = {
-            "audio_file": (
-                filename, audio_bytes, "application/octet-stream"
+            file_field: (
+                filename, audio_bytes, "audio/wav"
             )
         }
+        # These fields follow Gnani's published Prisma REST example.
+        # preferred_language anchors code-switched Hinglish recognition.
         data = {
-            "language_code": _language_code(language),
+            language_field: asr_locale,
+            "preferred_language": asr_locale,
             "format": "transcribe",
+            "itn_native_numerals": "true",
         }
         with httpx.Client(timeout=self.timeout) as client:
             response = client.post(
-                self.asr_url, headers=_api_key_headers(), files=files, data=data
+                self.asr_url,
+                headers=_api_key_headers(),
+                files=files,
+                data=data,
             )
             if response.is_error:
                 detail = response.text[:500]
@@ -105,7 +135,7 @@ class GnaniSpeechProvider:
             "text": text,
             "model": config.GNANI_TTS_MODEL or "timbre-v2.5",
             "voice": config.GNANI_TTS_VOICE or "Kaveri",
-            "language": _language_code(language),
+            "language": _tts_language_code(language),
             "speed": 1.0,
             "audio_config": {
                 "encoding": "linear_pcm",
