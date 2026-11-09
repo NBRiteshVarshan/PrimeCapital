@@ -151,9 +151,13 @@ def respond(sid,message,language="en"):
   text=f"{p['name']} has an illustrative annual interest rate of {p['annual_interest_rate']*100:.2f}% using {p['repayment_method'].replace('_',' ')} repayment. Amount range: ₹{p['min_amount']:,}–₹{p['max_amount']:,}; tenure: {p['min_tenure_months']}–{p['max_tenure_months']} months; processing fee: {p['processing_fee_percent']}% plus ₹{p['other_fees_inr']:,} other listed fee. All figures are synthetic demo data; confirm final terms with staff."
   return {"text":text,"state":"FACT_ANSWER","sources":[{"source_id":p["source_id"],"version":p["source_version"],"type":"structured_product_fact"}]}
  hits=search(raw)
+<<<<<<< HEAD
  if hits:
   knowledge_text = hits[0].get("text_hi") if language == "hi" else hits[0]["text"]
   return {"text":knowledge_text or hits[0]["text"],"state":"FACT_ANSWER","sources":[{"source_id":hits[0]["source_id"],"version":hits[0]["version"],"type":"approved_knowledge","title":hits[0].get("title_hi") if language == "hi" else hits[0]["title"]}]}
+=======
+ if hits:return {"text":hits[0]["text"],"state":"FACT_ANSWER","sources":[{"source_id":hits[0]["source_id"],"version":hits[0]["version"],"type":"approved_knowledge","title":hits[0]["title"]}]}
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
  e=create_enquiry(raw,"low_evidence",language=language);write_event("low_evidence_escalation",session_id=sid,enquiry_id=e["id"])
  return {"text":"I couldn’t find enough approved evidence to answer safely. I’ve created a staff review item. You can ask another question or request a human.","state":"ESCALATE","sources":[],"enquiry_id":e["id"]}
 def safe_response(result):

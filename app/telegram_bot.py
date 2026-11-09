@@ -8,26 +8,40 @@ Features:
 - Telegram audio attachment handling
 - Gnani Prisma v2.5 speech-to-text
 - Gnani Timbre v2.5 text-to-speech
+<<<<<<< HEAD
 - User-selected English/Hindi voice replies
+=======
+- Hinglish voice replies
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 - Text + voice responses for both input methods
 - Detailed diagnostic logging
 """
 
 import asyncio
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 import io
 import logging
 import subprocess
 
 from dotenv import load_dotenv
+<<<<<<< HEAD
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+=======
+from telegram import Update
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 from telegram.constants import ChatAction
 from telegram.ext import (
     Application,
     CommandHandler,
     ContextTypes,
     MessageHandler,
+<<<<<<< HEAD
     CallbackQueryHandler,
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     filters,
 )
 
@@ -35,9 +49,12 @@ from . import config
 from .orchestrator import respond, safe_response
 from .speech import SpeechProvider
 from .audit import write_event
+<<<<<<< HEAD
 from . import supabase_data
 from .document_ocr import extract_document
 from .localization import localize_text, normalize_language
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
 
 # ==================================================
@@ -64,7 +81,10 @@ if TELEGRAM_ASR_LANGUAGE not in {"en", "hi", "hinglish"}:
 # In-memory consent tracking.
 # Consent resets when the bot restarts.
 consented_users = set()
+<<<<<<< HEAD
 document_consented_users = set()
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
 logging.basicConfig(
     level=logging.INFO,
@@ -153,9 +173,15 @@ def convert_telegram_audio_to_wav(audio_bytes: bytes) -> bytes:
 # TEXT-TO-SPEECH
 # ==================================================
 
+<<<<<<< HEAD
 def generate_voice_reply(text: str, language: str = "en") -> bytes:
     """
     Generate speech in the user's selected language using Gnani Timbre v2.5.
+=======
+def generate_voice_reply(text: str) -> bytes:
+    """
+    Generate Hinglish speech using Gnani Timbre v2.5.
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     Convert WAV output into Telegram-compatible OGG/Opus.
     """
 
@@ -166,7 +192,11 @@ def generate_voice_reply(text: str, language: str = "en") -> bytes:
 
     wav_audio = SpeechProvider().synthesize(
         text=text,
+<<<<<<< HEAD
         language=normalize_language(language),
+=======
+        language="hinglish",
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     )
 
     if not wav_audio:
@@ -226,6 +256,7 @@ def generate_voice_reply(text: str, language: str = "en") -> bytes:
 
 
 # ==================================================
+<<<<<<< HEAD
 # REPLY LANGUAGE PREFERENCE
 # ==================================================
 
@@ -316,6 +347,11 @@ def is_document_upload_intent(text: str) -> bool:
     )
 
 
+=======
+# SHARED RESPONSE PROCESSOR
+# ==================================================
+
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 async def process_user_message(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -324,7 +360,12 @@ async def process_user_message(
     """
     Process either a normal text message or an ASR transcript.
 
+<<<<<<< HEAD
     Both input types use the same orchestrator and use the saved reply language.
+=======
+    Both input types use the same orchestrator and receive
+    text and Hinglish voice responses.
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     """
 
     message = update.message
@@ -334,6 +375,7 @@ async def process_user_message(
     if not message or not user or not chat:
         return
 
+<<<<<<< HEAD
     reply_language = await get_reply_language(chat.id) or "en"
     if user.id not in consented_users:
         await message.reply_text(localize_text("Please provide your consent first using /consent.", reply_language))
@@ -371,6 +413,20 @@ async def process_user_message(
         await message.reply_text(localize_text(
             "Certainly! Please upload a clear photo of your PAN card or GST certificate here.\n\nOur system will extract the document information and forward it to our team for human verification.", reply_language
         ))
+=======
+    if user.id not in consented_users:
+        await message.reply_text(
+            "Please provide your consent first using /consent."
+        )
+        return
+
+    user_text = (user_text or "").strip()
+
+    if not user_text:
+        await message.reply_text(
+            "I couldn't understand your message. Please try again."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     session_id = f"telegram:{chat.id}"
@@ -392,19 +448,31 @@ async def process_user_message(
                 respond(
                     session_id,
                     user_text,
+<<<<<<< HEAD
                     reply_language,
+=======
+                    "en",
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
                 )
             )
         )
 
         answer = result.get(
             "text",
+<<<<<<< HEAD
             localize_text("Sorry, I couldn't process your message.", reply_language),
         )
 
         if not isinstance(answer, str) or not answer.strip():
             answer = localize_text("Sorry, I couldn't generate a response.", reply_language)
         answer = localize_text(answer, reply_language)
+=======
+            "Sorry, I couldn't process your message.",
+        )
+
+        if not isinstance(answer, str) or not answer.strip():
+            answer = "Sorry, I couldn't generate a response."
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
         logger.info("ORCHESTRATOR: Response generated successfully.")
 
@@ -420,9 +488,16 @@ async def process_user_message(
             "ORCHESTRATOR ERROR: Failed to generate response."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text(
             "I encountered a problem processing your question. Please try again.", reply_language
         ))
+=======
+        await message.reply_text(
+            "I encountered a problem processing your question. "
+            "Please try again."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     # --------------------------------------------------
@@ -450,7 +525,11 @@ async def process_user_message(
     # --------------------------------------------------
 
     try:
+<<<<<<< HEAD
         logger.info("TTS: Generating %s voice response.", reply_language)
+=======
+        logger.info("TTS: Generating Hinglish voice response.")
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
         await context.bot.send_chat_action(
             chat_id=chat.id,
@@ -460,7 +539,10 @@ async def process_user_message(
         voice_audio = await asyncio.to_thread(
             generate_voice_reply,
             answer,
+<<<<<<< HEAD
             reply_language,
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         )
 
         logger.info("TTS: Voice generation successful.")
@@ -470,9 +552,16 @@ async def process_user_message(
             "TTS ERROR: Could not generate voice response."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text(
             "Your text response is ready, but I couldn't generate the voice reply this time.", reply_language
         ))
+=======
+        await message.reply_text(
+            "Your text response is ready, but I couldn't "
+            "generate the voice reply this time."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     # --------------------------------------------------
@@ -485,7 +574,11 @@ async def process_user_message(
 
         await message.reply_voice(
             voice=voice_file,
+<<<<<<< HEAD
             caption=("PrimeCapital | English Voice Reply" if reply_language == "en" else "PrimeCapital | Hindi Voice Reply"),
+=======
+            caption="PrimeCapital | Hinglish Voice Reply",
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         )
 
         logger.info("TELEGRAM: Voice response sent successfully.")
@@ -494,7 +587,11 @@ async def process_user_message(
             "telegram_voice_reply_sent",
             telegram_user_id=user.id,
             session_id=session_id,
+<<<<<<< HEAD
             language=reply_language,
+=======
+            language="hinglish",
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
             provider="gnani-timbre-v2.5",
         )
 
@@ -503,9 +600,16 @@ async def process_user_message(
             "TELEGRAM VOICE ERROR: Could not send voice response."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text(
             "Your text response is ready, but Telegram couldn't deliver the voice message.", reply_language
         ))
+=======
+        await message.reply_text(
+            "Your text response is ready, but Telegram "
+            "couldn't deliver the voice message."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
 
 # ==================================================
@@ -525,7 +629,13 @@ async def handle_message(
         return
 
     if chat.type != "private":
+<<<<<<< HEAD
         await message.reply_text(localize_text("Please interact with PrimeCapital through a private chat.", await get_reply_language(chat.id) or "en"))
+=======
+        await message.reply_text(
+            "Please interact with PrimeCapital through a private chat."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     text = (message.text or "").strip()
@@ -561,6 +671,7 @@ async def handle_voice(
         return
 
     if chat.type != "private":
+<<<<<<< HEAD
         await message.reply_text(localize_text("Please interact with PrimeCapital through a private chat.", await get_reply_language(chat.id) or "en"))
         return
 
@@ -575,6 +686,19 @@ async def handle_voice(
         return
     context.user_data["reply_language"] = reply_language
 
+=======
+        await message.reply_text(
+            "Please interact with PrimeCapital through a private chat."
+        )
+        return
+
+    if user.id not in consented_users:
+        await message.reply_text(
+            "Please provide your consent first using /consent."
+        )
+        return
+
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     # Determine whether this is a voice note or audio attachment.
     if message.voice:
         file_id = message.voice.file_id
@@ -585,7 +709,13 @@ async def handle_voice(
         file_name = message.audio.file_name or "telegram_audio"
 
     else:
+<<<<<<< HEAD
         await message.reply_text(localize_text("No supported audio file was found.", reply_language))
+=======
+        await message.reply_text(
+            "No supported audio file was found."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     # --------------------------------------------------
@@ -619,7 +749,13 @@ async def handle_voice(
             "VOICE DOWNLOAD ERROR: Could not download Telegram audio."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text("I couldn't download your voice message. Please try again.", reply_language))
+=======
+        await message.reply_text(
+            "I couldn't download your voice message. Please try again."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     # --------------------------------------------------
@@ -645,7 +781,14 @@ async def handle_voice(
             "AUDIO CONVERSION ERROR: Could not convert Telegram audio."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text("I received your voice message, but couldn't convert its audio format. Please try recording again.", reply_language))
+=======
+        await message.reply_text(
+            "I received your voice message, but couldn't convert "
+            "its audio format. Please try recording again."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     # --------------------------------------------------
@@ -657,7 +800,13 @@ async def handle_voice(
             "ASR DEBUG: Sending WAV audio to Gnani Prisma v2.5."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text("Listening to your voice message... 🎧", reply_language))
+=======
+        await message.reply_text(
+            "Listening to your voice message... 🎧"
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
         transcription = await asyncio.to_thread(
             lambda: SpeechProvider().transcribe(
@@ -692,7 +841,15 @@ async def handle_voice(
             "ASR ERROR: Gnani Prisma transcription failed."
         )
 
+<<<<<<< HEAD
         await message.reply_text(localize_text("I received your voice message, but couldn't understand it. Please try speaking again or send your question as text.", reply_language))
+=======
+        await message.reply_text(
+            "I received your voice message, but couldn't "
+            "understand it. Please try speaking again or "
+            "send your question as text."
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         return
 
     # --------------------------------------------------
@@ -700,8 +857,14 @@ async def handle_voice(
     # --------------------------------------------------
 
     try:
+<<<<<<< HEAD
         transcript_label = "🎤 I heard:" if reply_language == "en" else "🎤 मैंने यह सुना:"
         await message.reply_text(f"{transcript_label}\n{recognized_text}")
+=======
+        await message.reply_text(
+            f"🎤 I heard:\n{recognized_text}"
+        )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
     except Exception:
         logger.exception(
@@ -724,6 +887,7 @@ async def handle_voice(
 
 
 # ==================================================
+<<<<<<< HEAD
 # DOCUMENT PHOTO / OCR HANDLER
 # ==================================================
 
@@ -789,6 +953,8 @@ async def handle_document_photo(update: Update, context: ContextTypes.DEFAULT_TY
 
 
 # ==================================================
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 # TELEGRAM COMMANDS
 # ==================================================
 
@@ -799,6 +965,7 @@ async def start(
     if not update.message:
         return
 
+<<<<<<< HEAD
     saved_language = await get_reply_language(update.effective_chat.id) if update.effective_chat else None
     if saved_language == "hi":
         welcome = ("PrimeCapital में आपका स्वागत है! 👋\n\n"
@@ -824,6 +991,22 @@ async def start(
             "For optional PAN/GST document upload, review the notice with /docconsent."
         )
     await update.message.reply_text(welcome)
+=======
+    await update.message.reply_text(
+        "Welcome to PrimeCapital! 👋\n\n"
+        "Your AI-powered business loan assistant.\n\n"
+        "You can interact with me using:\n"
+        "• Text messages\n"
+        "• Voice messages\n\n"
+        "I can help with:\n"
+        "• Business loan information\n"
+        "• Eligibility guidance\n"
+        "• EMI calculations\n"
+        "• Required documents\n"
+        "• Loan product information\n\n"
+        "Please provide your consent using /consent."
+    )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
 
 async def consent(
@@ -842,6 +1025,7 @@ async def consent(
         telegram_user_id=user.id,
     )
 
+<<<<<<< HEAD
     saved_language = await get_reply_language(update.effective_chat.id) if update.effective_chat else None
     if saved_language:
         context.user_data["reply_language"] = saved_language
@@ -883,6 +1067,14 @@ async def stop_document_consent(update: Update, context: ContextTypes.DEFAULT_TY
     if update.message:
         reply_language = await get_reply_language(update.effective_chat.id) or "en"
         await update.message.reply_text(localize_text("Document uploads are disabled for this chat.", reply_language))
+=======
+    await update.message.reply_text(
+        "Consent received successfully! ✅\n\n"
+        "You can now send text or voice messages.\n\n"
+        "PrimeCapital will provide both text and Hinglish "
+        "voice replies."
+    )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
 
 async def help_command(
@@ -892,6 +1084,7 @@ async def help_command(
     if not update.message:
         return
 
+<<<<<<< HEAD
     reply_language = await get_reply_language(update.effective_chat.id) or "en"
     help_text = (
         "PrimeCapital Help\n\n"
@@ -900,10 +1093,17 @@ async def help_command(
         "/docconsent - Opt in to PAN/GST document processing\n"
         "/stopdoc - Disable document uploads\n"
         "/language - Change reply language (English/Hindi)\n"
+=======
+    await update.message.reply_text(
+        "PrimeCapital Help\n\n"
+        "/start - Start the bot\n"
+        "/consent - Provide consent\n"
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         "/help - Show help\n\n"
         "Supported input:\n"
         "• Text messages\n"
         "• Telegram voice notes\n"
+<<<<<<< HEAD
         "• Audio attachments\n"
         "• PAN/GST document photos (after /docconsent)\n\n"
         "All successful queries receive text and voice responses in your selected language."
@@ -917,6 +1117,12 @@ async def help_command(
             "आप टेक्स्ट, वॉइस नोट, ऑडियो और सहमति के बाद PAN/GST दस्तावेज़ की फोटो भेज सकते हैं।\n"
             "सभी जवाब आपकी चुनी हुई भाषा में टेक्स्ट और आवाज़ के रूप में मिलेंगे।")
     await update.message.reply_text(help_text)
+=======
+        "• Audio attachments\n\n"
+        "All successful queries receive text and "
+        "Hinglish voice responses."
+    )
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
 
 # ==================================================
@@ -948,10 +1154,13 @@ def main():
     application.add_handler(
         CommandHandler("help", help_command)
     )
+<<<<<<< HEAD
     application.add_handler(CommandHandler("language", language_command))
     application.add_handler(CallbackQueryHandler(set_reply_language_callback, pattern=r"^reply_language:(en|hi)$"))
     application.add_handler(CommandHandler("docconsent", document_consent))
     application.add_handler(CommandHandler("stopdoc", stop_document_consent))
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 
     # Text messages.
     application.add_handler(
@@ -961,9 +1170,12 @@ def main():
         )
     )
 
+<<<<<<< HEAD
     # Document photos.
     application.add_handler(MessageHandler(filters.PHOTO, handle_document_photo))
 
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     # Voice notes and audio attachments.
     application.add_handler(
         MessageHandler(
@@ -979,7 +1191,11 @@ def main():
     logger.info("Telegram ASR input language: %s", TELEGRAM_ASR_LANGUAGE)
     logger.info("Gnani Prisma ASR: CONFIGURED=%s", bool(config.GNANI_ASR_URL))
     logger.info("Gnani Timbre TTS: CONFIGURED=%s", bool(config.GNANI_TTS_URL))
+<<<<<<< HEAD
     logger.info("User-selected English/Hindi replies: ENABLED")
+=======
+    logger.info("Hinglish voice replies: ENABLED")
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
     logger.info("=" * 55)
 
     application.run_polling()

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Build the React frontend, then serve it from the FastAPI application.
 FROM node:22-slim AS frontend-build
 WORKDIR /frontend
@@ -13,5 +14,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 COPY --from=frontend-build /app/app/static/frontend ./app/static/frontend
+=======
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 EXPOSE 8000
 CMD ["uvicorn","app.main:app","--host","0.0.0.0","--port","8000"]

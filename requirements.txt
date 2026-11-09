@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 transformers>=4.45
 accelerate>=0.34
 torch>=2.4
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 fastapi>=0.115,<1.0
 uvicorn[standard]>=0.30,<1.0
 pydantic>=2.8,<3.0
@@ -10,5 +13,8 @@ PyYAML>=6.0,<7.0
 python-multipart>=0.0.9,<1.0
 python-dotenv>=1.0,<2.0
 python-telegram-bot>=21,<23
+<<<<<<< HEAD
 Pillow>=10.0
 pytesseract>=0.3.10
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa

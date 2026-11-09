@@ -43,9 +43,12 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "").strip()
 SUPABASE_ENABLED = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
 SUPABASE_HTTP_TIMEOUT_SECONDS = float(os.getenv("SUPABASE_HTTP_TIMEOUT_SECONDS", "10"))
+<<<<<<< HEAD
 
 # Telegram document OCR and staff-only document access.
 SUPABASE_DOCUMENT_BUCKET = os.getenv("SUPABASE_DOCUMENT_BUCKET", "primecapital-documents").strip()
 STAFF_ACCESS_TOKEN = os.getenv("STAFF_ACCESS_TOKEN", "").strip()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_DOCUMENT_MAX_BYTES = int(os.getenv("TELEGRAM_DOCUMENT_MAX_BYTES", str(8 * 1024 * 1024)))
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa

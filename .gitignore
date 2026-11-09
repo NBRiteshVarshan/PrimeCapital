@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ==============================
 # ENVIRONMENT VARIABLES & SECRETS
 # ==============================
@@ -117,3 +118,6 @@ render.yaml.tmp
 # GIT
 # ==============================
 *.orig
+=======
+__pycache__/\n.pytest_cache/\n.venv/\n.env\nruntime/audit.jsonl\n
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa

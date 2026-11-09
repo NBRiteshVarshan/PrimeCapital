@@ -10,7 +10,11 @@ from .facts import all_products,public_product
 from .orchestrator import respond,safe_response
 from .store import create_enquiry,list_enquiries,update_enquiry
 from .audit import write_event,read_events
+<<<<<<< HEAD
 from .speech import SpeechProvider, ProviderNotConfigured, normalize_asr_audio
+=======
+from .speech import SpeechProvider, ProviderNotConfigured
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 from .evon import interpret as evon_interpret, EvonNotConfigured
 from . import config as app_config
 from . import supabase_data
@@ -38,6 +42,7 @@ class StaffUpdate(BaseModel):
 class ConfirmIn(BaseModel):
  session_id:str
  confirmed:bool
+<<<<<<< HEAD
 class DocumentReviewIn(BaseModel):
  decision: str = Field(pattern="^(accepted|rejected)$")
  rejection_reason: str | None = Field(default=None, max_length=250)
@@ -50,6 +55,12 @@ def home():
 @app.get("/staff")
 def staff():
  return FileResponse(FRONTEND_INDEX if FRONTEND_INDEX.exists() else STATIC_DIR/"staff.html")
+=======
+@app.get("/")
+def home():return FileResponse(STATIC_DIR/"index.html")
+@app.get("/staff")
+def staff():return FileResponse(STATIC_DIR/"staff.html")
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 @app.get("/api/health")
 def health():
  from . import config
@@ -125,8 +136,12 @@ async def speech_transcribe(file: UploadFile = File(...), language: str = Form("
     if len(audio) > 15 * 1024 * 1024:
         raise HTTPException(413, "Audio must be 15 MB or smaller.")
     try:
+<<<<<<< HEAD
         normalized_audio, normalized_filename = normalize_asr_audio(audio, file.filename or "utterance.webm")
         result = SpeechProvider().transcribe(normalized_audio, language, normalized_filename)
+=======
+        result = SpeechProvider().transcribe(audio, language, file.filename or "utterance.webm")
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
         write_event("speech_transcribed", provider=result.provider, language=language, audio_bytes=len(audio))
         return {"text": result.text, "provider": result.provider, "model": "Prisma v2.5"}
     except ProviderNotConfigured as ex:
@@ -158,17 +173,24 @@ def speech_synthesize(payload: dict):
 def handoff(p:HandoffIn):
  x=create_enquiry(p.summary,"handoff",language=p.language);write_event("handoff_created",enquiry_id=x["id"],reason="explicit_api_handoff");return x
 @app.get("/api/staff/enquiries")
+<<<<<<< HEAD
 def enquiries(request: Request):
  _require_staff_token(request)
  return list_enquiries()
 @app.patch("/api/staff/enquiries/{eid}")
 def patch(eid:str,p:StaffUpdate,request: Request):
  _require_staff_token(request)
+=======
+def enquiries():return list_enquiries()
+@app.patch("/api/staff/enquiries/{eid}")
+def patch(eid:str,p:StaffUpdate):
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
  try:x=update_enquiry(eid,p.status,p.assigned_to,p.feedback_label)
  except ValueError as ex:raise HTTPException(422,str(ex))
  if not x:raise HTTPException(404,"Enquiry not found")
  write_event("staff_enquiry_updated",enquiry_id=eid,status=x["status"],assigned_to=x["assigned_to"],feedback_label=x["feedback_label"]);return x
 @app.get("/api/staff/audit")
+<<<<<<< HEAD
 def audit(request: Request):
  _require_staff_token(request)
  return read_events()
@@ -286,3 +308,6 @@ def staff_review_document(document_id: str, payload: DocumentReviewIn, request: 
         raise HTTPException(422, str(ex))
     except supabase_data.SupabaseDataError as ex:
         raise HTTPException(503, str(ex))
+=======
+def audit():return read_events()
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa

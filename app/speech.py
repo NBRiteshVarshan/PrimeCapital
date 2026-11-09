@@ -4,10 +4,13 @@ Endpoints and payloads follow Gnani's published Speech API documentation.
 Keep credentials in .env; never hard-code or commit API keys.
 """
 from dataclasses import dataclass
+<<<<<<< HEAD
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 import httpx
 from . import config
 
@@ -22,6 +25,7 @@ class ProviderNotConfigured(RuntimeError):
     pass
 
 
+<<<<<<< HEAD
 def normalize_asr_audio(audio_bytes: bytes, filename: str) -> tuple[bytes, str]:
     """Convert browser WebM/Opus recordings to Gnani's supported WAV format."""
     extension = Path(filename or "").suffix.lower().lstrip(".")
@@ -48,6 +52,8 @@ def normalize_asr_audio(audio_bytes: bytes, filename: str) -> tuple[bytes, str]:
         return target.read_bytes(), "recording.wav"
 
 
+=======
+>>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
 def _api_key_headers():
     if not config.GNANI_API_KEY:
         raise ProviderNotConfigured(
