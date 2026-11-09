@@ -1,37 +1,261 @@
-<<<<<<< HEAD
 # PrimeCapital
+### Voice-First, Multilingual Loan Assistance for Small Businesses
 
-PrimeCapital is a synthetic business-loan enquiry demonstration. The catalogue is illustrative training data, not an official lender offer, eligibility decision, or loan approval.
+**Making financial assistance as simple as having a conversation.**
 
-## Architecture
+PrimeCapital is an AI-powered loan assistance platform designed for financial institutions and loan providers serving micro and small-scale businesses. It enables customers to enquire about loans, understand requirements, submit documents, and receive assistance through natural, multilingual text and voice conversations.
 
-- React + Vite frontend in `frontend/`
-- FastAPI is the only backend in `app/`
-- Production frontend assets are built into `app/static/frontend/` and served by FastAPI
-- All browser API calls use the same-origin `/api` routes
+Built around Gnani AI's speech capabilities, PrimeCapital aims to make financial services more accessible to business owners who may not be comfortable navigating conventional, text-heavy digital platforms.
 
-The legacy `frontend/server.ts` is not started by any npm script and is not part of the application workflow.
+---
 
-## Setup
+## 1. The Problem
 
-1. Copy `.env.example` to `.env` and set only backend secrets. Never put service-role, staff, Telegram, or provider keys in frontend files.
-2. Create a Python environment and install backend dependencies:
+Small businesses are essential to India's economy, yet accessing formal credit remains challenging for many of them.
+
+The problem is not just the availability of loans. Potential borrowers may also struggle with:
+
+- **Complex procedures:** Understanding eligibility criteria, documentation requirements, fees, and loan terms.
+- **Language barriers:** Financial information is often presented in languages customers may not be comfortable with.
+- **Limited literacy:** Many small-scale business owners may not be comfortable reading lengthy documents or typing queries.
+- **Digital accessibility:** Conventional websites and application forms can be intimidating for customers with limited digital experience.
+- **Support limitations:** Loan providers must handle repetitive enquiries while also managing document collection and customer follow-ups.
+
+These barriers make it difficult for many small-business owners to access and understand formal financial services.
+
+## 2. Our Solution
+
+PrimeCapital introduces a **voice-first approach to loan assistance**.
+
+Instead of expecting customers to read instructions, navigate complicated interfaces, or type their questions, the platform allows them to simply speak in a language they are comfortable with and receive a spoken response.
+
+The platform connects customers and loan providers through two interfaces:
+
+- **Customer interface:** A Telegram-based conversational assistant supporting text, voice, and document submission.
+- **Staff interface:** A web dashboard for accessing customer submissions and reviewing KYC documents.
+
+Our objective is to simplify routine customer interactions while keeping human assistance available whenever necessary.
+
+## 3. Key Features
+
+### A. Multilingual Voice Conversations
+
+- Send voice messages instead of typing loan-related queries.
+- Receive both text and generated voice responses.
+- English and Hindi response preferences.
+- Hinglish-style speech input support through configured speech recognition.
+- Persistent language preferences across conversations.
+- Change the preferred response language whenever required.
+
+### B. Gnani AI Speech Integration
+
+| Gnani Model | Purpose |
+|---|---|
+| **Prisma v2.5 (ASR)** | Converts customers' voice messages into text so their spoken loan enquiries can be processed. |
+| **Timbre v2.5 (TTS)** | Converts generated answers into natural voice responses in the customer's selected supported language. |
+| **Evon v3.3 (NLU - optional)** | Converts customer messages into structured intents and relevant information slots for downstream processing when the optional NLU endpoint is enabled. |
+
+### C. Loan Information and Assistance
+
+Customers can enquire about:
+
+- Available loan products.
+- Loan eligibility information and basic requirements.
+- Required documents.
+- Applicable interest rates, fees, and charges.
+- Other available loan-related information.
+
+Responses are grounded in configured product information rather than allowing the assistant to invent unsupported financial details.
+
+### D. EMI Estimation
+
+Calculate estimated monthly instalments using the loan amount, interest rate, and repayment tenure through deterministic financial calculations.
+
+### E. KYC Document Submission
+
+- Request document submission through Telegram.
+- Explicit document-processing consent before upload.
+- Upload PAN and GST document images.
+- OCR-based document information extraction and basic format checks.
+- Secure storage in a private Supabase Storage bucket.
+- Document metadata and review status tracking.
+
+Automated document checks are preliminary; they do not establish document authenticity or loan approval.
+
+### F. Staff Dashboard and Document Review
+
+- Access customer document submissions through a staff-facing dashboard.
+- Preview submitted documents through authorised access.
+- Approve or reject documents.
+- Record rejection reasons and review information.
+- Notify customers of document review outcomes through Telegram.
+
+### G. Human Assistance and Escalation
+
+Customers can request human support when an enquiry requires individual attention, ensuring that automation does not replace access to actual staff.
+
+### H. Privacy and Security
+
+- Explicit consent before general bot interactions.
+- Separate consent for KYC document processing.
+- Private document storage.
+- Backend-only service credentials.
+- Staff-token-protected document review endpoints.
+- Audit events for important customer and document workflows.
+
+---
+
+## 4. Why Does PrimeCapital Have Market Potential?
+
+PrimeCapital addresses a genuine accessibility and operational problem in the MSME lending ecosystem.
+
+### Our Target Customers
+
+- Non-Banking Financial Companies (NBFCs).
+- Microfinance institutions.
+- Small-business lenders.
+- Cooperative financial institutions.
+- Banks and fintech companies serving micro and small enterprises.
+
+### Our Market Opportunity
+
+India has a large MSME ecosystem with significant unmet demand for formal credit.
+
+NITI Aayog's 2025 report highlighted an estimated **₹80 lakh crore of unmet MSME credit demand**, based on FY21 data. This demonstrates the scale of the broader financing challenge, although it is not the addressable market size for PrimeCapital.
+
+### Where PrimeCapital Creates Value
+
+| For Borrowers | For Loan Providers |
+|---|---|
+| Easier access to loan information | Reduced repetitive enquiry workload |
+| Voice-based interaction | More accessible customer engagement |
+| Responses in a preferred language | Wider potential customer reach |
+| Simpler document submission | Structured document collection |
+| Access to human support | Organised document review workflow |
+
+### Potential Business Model
+
+PrimeCapital can be offered as a B2B solution to loan providers through:
+
+- Subscription-based access for financial institutions.
+- Customised or white-label deployments.
+- Usage-based pricing based on customer interactions.
+- Enterprise integrations with existing customer-support and loan-management systems.
+
+Its long-term opportunity lies in becoming an accessible customer-interaction layer for financial institutions serving underserved small businesses.
+
+---
+
+## 5. How It Works
+
+```text
+             CUSTOMER
+                 |
+                 v
+         TELEGRAM BOT / WEB
+                 |
+           Text or Voice
+                 |
+                 v
+        GNANI PRISMA v2.5
+           (Speech to Text)
+                 |
+                 v
+       PRIME CAPITAL BACKEND
+                 |
+          +------+------+
+          |             |
+          v             v
+    Loan Information  Optional Evon NLU
+          |             |
+          +------+------+
+                 |
+                 v
+             RESPONSE
+                 |
+            +----+----+
+            |         |
+            v         v
+        Text Reply  GNANI TIMBRE v2.5
+                        |
+                        v
+                    Voice Reply
+                 (Selected Language)
+
+
+         DOCUMENT WORKFLOW
+
+ Customer Upload
+        |
+        v
+     Supabase
+        |
+        v
+  Staff Dashboard
+        |
+        v
+  Review Decision
+        |
+        v
+ Telegram Feedback
+```
+
+---
+
+## 6. Technology Overview
+
+| Component | Technology |
+|---|---|
+| Frontend | React, Vite |
+| Backend | Python, FastAPI |
+| Speech recognition | Gnani Prisma v2.5 |
+| Speech generation | Gnani Timbre v2.5 |
+| Optional NLU | Gnani Evon v3.3 |
+| Customer communication | Telegram Bot API |
+| Database and document storage | Supabase |
+| Document processing | OCR |
+
+---
+
+## 7. Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js and npm
+- Telegram Bot Token
+- Gnani API credentials
+- Supabase project
+
+### Installation
+
+**1. Clone the repository**
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd PrimeCapital
+```
+
+**2. Configure the backend**
 
 ```bash
 python -m venv .venv
-.venv/Scripts/activate  # Windows
 pip install -r requirements.txt
 ```
 
-3. Run the one-time SQL migrations in the Supabase SQL Editor:
-   - `supabase/kyc_review_feedback_migration.sql` adds KYC review metadata.
-   - `supabase/telegram_language_preferences.sql` creates persistent per-chat English/Hindi reply-language preferences.
+Copy `.env.example` to `.env` and configure the required credentials.
 
-   The Telegram bot uses the Supabase service-role key on the backend to read and save the selected language. Users choose their preferred reply language after `/consent`, and can change it at any time with `/language`.
+**3. Configure Supabase**
 
-4. Ensure `TELEGRAM_BOT_TOKEN` is set in the backend `.env`. The same bot token used by the Telegram bot is used by FastAPI to send review notifications. Keep it server-side; never add it to frontend variables.
+Run the SQL migrations in the `supabase/` directory in the required order.
 
-5. Install the frontend dependencies and start the Vite development server:
+**4. Start the backend**
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+**5. Start the frontend**
 
 ```bash
 cd frontend
@@ -39,81 +263,33 @@ npm install
 npm run dev
 ```
 
-6. In a second terminal, run FastAPI:
+**6. Start the Telegram bot**
+
+In a separate terminal:
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+python -m app.telegram_bot
 ```
 
-Vite proxies `/api` to FastAPI during development. For production, run `npm run build` in `frontend/`, then start FastAPI; it serves the built application at `http://127.0.0.1:8000/`.
+Refer to the environment example and project configuration for provider-specific settings.
 
-## Telegram reply language
+---
 
-- On first consent, the bot asks the user to choose English or Hindi.
-- The selection is saved in `telegram_language_preferences` by Telegram chat ID and survives bot restarts.
-- `/language` lets the user change the preference.
-- The selected language controls both the text answer and Gnani Timbre v2.5 voice locale (`en-IN` or `hi-IN`). The ASR input configuration is unchanged; the bot does not infer the user's spoken language.
-- Hindi system responses use reviewed, deterministic Hindi templates. Product names, codes, and numeric financial values are preserved. The current approved local FAQ records include reviewed Hindi versions. If a future knowledge-base item has no reviewed Hindi version, the bot responds in Hindi that the Hindi version is unavailable rather than silently sending an English answer or inventing a translation. Add a reviewed `text_hi` field for every new approved knowledge-base entry.
+## 8. Important Notes
 
-## KYC review feedback
+- PrimeCapital is a loan enquiry and assistance platform, not an automated lending or credit-scoring system.
+- It does not approve or reject loan applications or make final eligibility decisions.
+- Loan information is based on configured demonstration data and must be replaced with verified lender-specific information before commercial use.
+- KYC document checks are preliminary and require human verification.
+- English and Hindi are supported response preferences; Hinglish-style speech recognition depends on the configured Prisma input language.
+- Evon v3.3 is an optional NLU integration and is not required for the core speech and loan-assistance workflow.
 
-- Staff acceptance/rejection is saved to `primecapital_documents`; the uploaded object is deleted from the private Supabase Storage bucket.
-- Review metadata is retained (`review_status`, `rejection_reason`, `reviewed_at`, `reviewed_by`). Do not store raw PAN numbers in this record.
-- Telegram feedback is sent after the decision is saved. If Telegram delivery fails, the staff dashboard reports that separately; the review decision remains saved.
-- Rejection requires a staff-entered reason (maximum 250 characters), which is included in the customer's Telegram message.
+---
 
-## Security and privacy
+## 9. Vision
 
-- Consent is never assumed by the browser. Voice transcription and chat requests send the current consent value.
-- Speech endpoints are the primary voice path. Browser text-to-speech is a clearly limited fallback when backend TTS is unavailable.
-- Staff endpoints require the `x-staff-token` header, including document previews and audit records.
-- Supabase service-role credentials remain backend-only. Document previews use short-lived signed URLs.
-- Telegram document upload requires consent and is stored in a private bucket. A metadata write failure triggers a best-effort storage cleanup.
+We envision a financial-services experience where a small-business owner does not need to understand complicated digital interfaces to access essential loan information.
 
-## Checks
+With PrimeCapital, we want to bridge the gap between financial institutions and the businesses they serve — one conversation at a time.
 
-```bash
-cd frontend
-npm run build
-cd ..
-python -m compileall app
-```
-
-Provider-dependent features require their configured endpoints and credentials. Missing integrations return controlled API errors instead of fabricated success responses.
-=======
-# PrimeCapital — Supabase integration
-
-This project is a voice-first **synthetic loan-enquiry demo**. The SBI-labelled products and policy facts in the training database are invented test data, not official State Bank of India products or lending terms.
-
-## Configure Supabase (FastAPI backend)
-
-1. In Supabase, open Project Settings → API (or API Keys). Copy the project URL and the server-side service-role/secret key.
-2. Create a local `.env` in the repository root (same directory as this README), using `.env.example` as a template:
-   ```env
-   SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVER_SIDE_SERVICE_ROLE_KEY
-   SUPABASE_HTTP_TIMEOUT_SECONDS=10
-   ```
-3. Keep `.env` out of Git. Never put the service-role key in frontend JavaScript, static HTML, screenshots, or a public repository.
-4. Install requirements and start FastAPI:
-   ```bash
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload
-   ```
-5. Test `GET http://127.0.0.1:8000/api/supabase/status`, `GET http://127.0.0.1:8000/api/products`, and `GET http://127.0.0.1:8000/api/health`.
-
-`/api/supabase/status` calls the fixed `lookup_demo_products` RPC and reports how many demo products it returned. If it reports an RPC permission error, review Supabase function/table privileges rather than granting broad anonymous table access.
-
-## Security and current scope
-
-- Supabase calls happen server-side only.
-- Product listing uses the fixed `lookup_demo_products` function; helper operations for fees, eligibility rules, and documents are fixed, read-only PostgREST queries.
-- Evon must never generate SQL to execute. Future query plans must be mapped to allow-listed operations and validated by FastAPI.
-- `/api/products` reads Supabase when configured and falls back to bundled local synthetic data otherwise.
-- This update adds a database connector and status endpoint; it does **not yet route all `/api/chat` answers through Supabase**. That is the next integration step after connection verification.
-- Synthetic values are not official SBI policy and must not be used for real lending decisions.
-
-
-## Frontend refresh
-The borrower UI has been refreshed to a responsive blue-and-white PrimeCapital experience with consent, language selection, chat, voice controls, product cards, and quick-question shortcuts. The staff dashboard has matching styling. Telegram bot access and scheduled follow-up are not implemented by this visual refresh; they require a configured provider and backend workflow.
->>>>>>> 9317841237f1c00d8b574b38f9885ecfb7b97caa
+**PrimeCapital — Finance made conversational.**
