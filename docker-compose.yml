@@ -1,0 +1,7 @@
+services:
+  primecapital:
+    build: .
+    ports: ["8000:8000"]
+    volumes: ["./runtime:/app/runtime"]
+    environment:
+      PRIME_CAPITAL_AUDIT_PATH: /app/runtime/audit.jsonl

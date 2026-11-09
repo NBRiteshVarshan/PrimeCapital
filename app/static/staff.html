@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrimeCapital · Staff Portal</title><style>
+:root{--navy:#122653;--blue:#376bff;--line:#dce5f5;--bg:#f4f7ff;--muted:#74819b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#18264a;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}header{background:#132b57;color:white;padding:14px clamp(16px,4vw,48px);display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 5px 18px #152c551c}header b{font-size:17px}header a{color:#fff;text-decoration:none;font-size:12px;border:1px solid #ffffff55;border-radius:10px;padding:8px 11px}main{max-width:1300px;margin:24px auto;padding:0 18px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#456bd0;font-weight:800}h1{margin:4px 0;font-size:28px;letter-spacing:-.7px}.muted{color:var(--muted);font-size:12px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px}button,input,select{font:inherit;padding:10px 12px;border-radius:11px;border:1px solid #d4def0;background:white;color:#1a2d5b}button{background:var(--blue);color:white;border:0;cursor:pointer;font-weight:750}button:disabled{opacity:.55;cursor:wait}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:14px;margin-top:18px}.card{background:white;border:1px solid var(--line);border-radius:17px;padding:17px;overflow-wrap:anywhere;box-shadow:0 9px 25px #213d7410}.card h3{font-size:15px;margin:0 0 8px;color:#1a3479}.card p{font-size:13px;color:#42516f}.card select,.card input{display:block;width:100%;margin:8px 0}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.stat{background:white;border:1px solid var(--line);border-radius:14px;padding:12px 16px;min-width:140px}.stat b{display:block;font-size:20px;color:#234ac0}.stat span{font-size:11px;color:var(--muted)}#auditbox{white-space:pre-wrap;background:white;border:1px solid var(--line);padding:15px;border-radius:14px;overflow:auto}.doc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.doc-actions .reject{background:#b42332}.doc-status{font-weight:750;text-transform:capitalize}.review-note{font-size:12px;color:var(--muted);margin-top:6px}@media(max-width:500px){main{padding:0 12px}.topbar{align-items:flex-start}h1{font-size:23px}}
+</style></head><body><header><b>◈ PrimeCapital <span style="font-weight:400;opacity:.75">| Staff Portal</span></b><a href="/">← Borrower experience</a></header><main><div class="topbar"><div><div class="eyebrow">Operations workspace</div><h1>Enquiry dashboard</h1><p class="muted">Review demo enquiries, update status, and inspect audit events.</p></div><div class="bar"><button id="refresh">↻ Refresh queue</button><button id="audit" style="background:#eaf0ff;color:#23428e">Show audit events</button></div></div><div class="stats"><div class="stat"><b id="count">—</b><span>Enquiries in queue</span></div><div class="stat"><b>Demo</b><span>Environment</span></div><div class="stat"><b>Local</b><span>In-memory queue</span></div></div><p class="muted" style="margin-top:14px">Demo only; authentication and role-based access are not enabled. Do not expose this dashboard publicly.</p><h2 style="margin-top:30px">Borrower leads & uploaded documents</h2><p class="muted">Enter the staff access token configured on the backend to load private lead records and temporary document previews.</p><div class="bar"><input id="staffToken" type="password" placeholder="Staff access token" autocomplete="off"><button id="loadLeads">Load leads</button></div><div id="leadItems" class="grid"></div><div id="items" class="grid"></div><pre id="auditbox" style="display:none"></pre></main><script>
+async function refresh(){let xs=await(await fetch("/api/staff/enquiries")).json();document.querySelector("#count").textContent=xs.length+" enquiries";let root=document.querySelector("#items");root.innerHTML="";if(!xs.length){root.textContent="No enquiries yet. Use Talk to a person or ask an unsupported question in the borrower app.";return}xs.forEach(x=>{let c=document.createElement("section");c.className="card";let h=document.createElement("h3");h.textContent=x.intent+" · "+x.status;let p=document.createElement("p");p.textContent=x.summary;let m=document.createElement("div");m.className="muted";m.textContent="Created "+new Date(x.created_at).toLocaleString()+" · SLA target "+x.sla_minutes+" min";let s=document.createElement("select");["open","assigned","escalated","resolved"].forEach(v=>{let o=document.createElement("option");o.value=v;o.textContent=v;o.selected=v===x.status;s.appendChild(o)});let a=document.createElement("input");a.placeholder="Assigned staff";a.value=x.assigned_to||"";let f=document.createElement("input");f.placeholder="Feedback label";f.value=x.feedback_label||"";let b=document.createElement("button");b.textContent="Save update";b.onclick=async()=>{await fetch("/api/staff/enquiries/"+x.id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:s.value,assigned_to:a.value,feedback_label:f.value})});refresh()};c.append(h,p,m,s,a,f,b);root.appendChild(c)})}
+document.querySelector("#refresh").onclick=refresh;document.querySelector("#audit").onclick=async()=>{let d=await(await fetch("/api/staff/audit")).json(),b=document.querySelector("#auditbox");b.style.display="block";b.textContent=JSON.stringify(d,null,2)};refresh();
+
+const staffHeaders=()=>({"X-Staff-Token":document.querySelector("#staffToken").value});
+async function reviewDocument(docId, decision, button){
+  const verb = decision === "accepted" ? "accept" : "reject";
+  const confirmed = window.confirm(`Are you sure you want to ${verb} this document? The original uploaded file will be permanently deleted from storage.`);
+  if(!confirmed)return;
+  button.disabled=true;
+  const oldText=button.textContent;
+  button.textContent="Processing…";
+  try{
+    const resp=await fetch(`/api/staff/documents/${encodeURIComponent(docId)}/review`,{
+      method:"POST",
+      headers:{...staffHeaders(),"Content-Type":"application/json"},
+      body:JSON.stringify({decision})
+    });
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok)throw new Error(data.detail||`HTTP ${resp.status}`);
+    await loadLeads();
+    alert(`Document ${decision}. Original file deleted successfully.`);
+  }catch(e){
+    alert("Review failed: "+e.message);
+    button.disabled=false;
+    button.textContent=oldText;
+  }
+}
+async function loadLeads(){
+  const root=document.querySelector("#leadItems");
+  root.textContent="Loading leads...";
+  try{
+    const r=await fetch("/api/staff/leads",{headers:staffHeaders()});
+    if(!r.ok)throw new Error((await r.json()).detail||`HTTP ${r.status}`);
+    const leads=await r.json();
+    root.innerHTML="";
+    if(!leads.length){root.textContent="No borrower leads or uploaded documents yet.";return}
+    for(const lead of leads){
+      const card=document.createElement("section");card.className="card";
+      const h=document.createElement("h3");h.textContent=(lead.name||lead.telegram_username||"Telegram borrower")+" · "+lead.status;
+      const details=document.createElement("p");
+      details.textContent=`Phone: ${lead.phone||"Not captured"}\nLoan interest: ${lead.loan_interest||"Not captured"}\nChannel: ${lead.channel||"—"}\nSummary: ${lead.conversation_summary||"No summary yet"}`;
+      details.style.whiteSpace="pre-wrap";card.append(h,details);
+      const status=document.createElement("select");
+      for(const value of ["new","contacted","closed"]){const opt=document.createElement("option");opt.value=value;opt.textContent=value[0].toUpperCase()+value.slice(1);opt.selected=value===lead.status;status.append(opt)}
+      const save=document.createElement("button");save.textContent="Save lead status";
+      save.onclick=async()=>{const resp=await fetch(`/api/staff/leads/${lead.id}`,{method:"PATCH",headers:{...staffHeaders(),"Content-Type":"application/json"},body:JSON.stringify({status:status.value})});if(!resp.ok){alert("Could not update lead status.");return}loadLeads()};
+      card.append(status,save);
+      for(const doc of (lead.primecapital_documents||[])){
+        const box=document.createElement("div");box.style.cssText="margin-top:12px;padding:12px;border:1px solid #dce5f5;border-radius:12px";
+        const label=document.createElement("p");label.textContent=`${doc.document_type} · ${doc.masked_identifier||"Identifier not detected"} · ${doc.review_status} · OCR format: ${doc.format_check}`;
+        const statusLine=document.createElement("div");statusLine.className="doc-status";statusLine.textContent=doc.review_status.replaceAll("_"," ");
+        box.append(label);
+        if(doc.review_status==="pending_human_review"){
+          const view=document.createElement("button");view.textContent="View document (temporary link)";
+          view.onclick=async()=>{const resp=await fetch(`/api/staff/documents/${doc.id}/view`,{headers:staffHeaders()});if(!resp.ok){alert("Could not create document preview link.");return}const data=await resp.json();window.open(data.url,"_blank","noopener,noreferrer")};
+          const actions=document.createElement("div");actions.className="doc-actions";
+          const accept=document.createElement("button");accept.textContent="Accept document";accept.onclick=()=>reviewDocument(doc.id,"accepted",accept);
+          const reject=document.createElement("button");reject.className="reject";reject.textContent="Reject document";reject.onclick=()=>reviewDocument(doc.id,"rejected",reject);
+          actions.append(accept,reject);box.append(view,actions);
+        }else{
+          const note=document.createElement("p");note.className="review-note";note.textContent="Reviewed. The original uploaded file has been deleted; only the review record remains.";
+          box.append(statusLine,note);
+        }
+        card.append(box);
+      }
+      root.append(card);
+    }
+  }catch(e){root.textContent="Unable to load leads: "+e.message}
+}
+document.querySelector("#loadLeads").addEventListener("click",loadLeads);
+</script></body></html>

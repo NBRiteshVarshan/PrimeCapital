@@ -1,0 +1,119 @@
+# ==============================
+# ENVIRONMENT VARIABLES & SECRETS
+# ==============================
+.env
+.env.*
+!.env.example
+!.env.sample
+
+*.pem
+*.key
+secrets/
+credentials/
+service-account*.json
+
+# ==============================
+# PYTHON / FASTAPI BACKEND
+# ==============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+wheels/
+dist-python/
+build-python/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ==============================
+# REACT / VITE FRONTEND
+# ==============================
+node_modules/
+dist/
+build/
+.vite/
+.parcel-cache/
+.npm/
+.eslintcache
+
+# ==============================
+# LOGS & DEBUGGING
+# ==============================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+debug.log
+
+# ==============================
+# DATABASE / LOCAL DATA
+# ==============================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# ==============================
+# UPLOADS & TEMPORARY FILES
+# ==============================
+tmp/
+temp/
+*.tmp
+*.bak
+.DS_Store
+
+# ==============================
+# IDE / EDITOR
+# ==============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# ==============================
+# OPERATING SYSTEM
+# ==============================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ==============================
+# TESTING / COVERAGE
+# ==============================
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# ==============================
+# DEPLOYMENT / BUILD ARTIFACTS
+# ==============================
+.vercel/
+.netlify/
+render.yaml.tmp
+
+# ==============================
+# JUPYTER
+# ==============================
+.ipynb_checkpoints/
+
+# ==============================
+# GIT
+# ==============================
+*.orig

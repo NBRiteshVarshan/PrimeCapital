@@ -1,0 +1,6 @@
+{
+  "name": "PrimeCapital AI - Voice-First MSME Loan Assistant",
+  "description": "AI-powered, voice-first business loan enquiry assistant designed for small-business owners in India. Explore loan products, calculate EMIs, and check document requirements in English, Hindi, and Hinglish.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

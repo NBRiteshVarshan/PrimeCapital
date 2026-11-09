@@ -1,0 +1,23 @@
+- id: FACT-001
+  intent: product_fees
+  input: "What are the fees for Working Capital Flex?"
+  expected_state: FACT_ANSWER
+  required_evidence: SYN-PROD-WC-01
+  critical: true
+- id: DOC-001
+  intent: documents
+  input: "What documents do I need for Equipment Growth Loan?"
+  expected_state: DOCUMENTS
+  required_evidence: SYN-PROD-EQ-01
+  critical: true
+- id: CALC-001
+  intent: emi
+  input: "Calculate EMI for ₹200000 over 24 months for Working Capital Flex"
+  expected_state: CLARIFY
+  expected_behavior: read_back_before_calculation
+  critical: true
+- id: ESC-001
+  intent: handoff
+  input: "I want to talk to a person"
+  expected_state: HANDOFF
+  critical: true

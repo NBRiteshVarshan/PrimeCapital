@@ -1,0 +1,50 @@
+[
+  {
+    "id": "FAQ-001",
+    "title": "What is a processing fee?",
+    "text": "A processing fee is a charge for processing a loan enquiry or application. Demo fees are listed on each approved product record. Confirm final charges with lender staff.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-001",
+    "title_hi": "प्रोसेसिंग फीस क्या है?",
+    "text_hi": "प्रोसेसिंग फीस, लोन की पूछताछ या आवेदन को प्रोसेस करने के लिए लिया जाने वाला शुल्क है। डेमो फीस हर स्वीकृत प्रोडक्ट रिकॉर्ड में दी गई है। अंतिम शुल्क की पुष्टि बैंक की टीम से करें।"
+  },
+  {
+    "id": "FAQ-002",
+    "title": "Are these terms guaranteed?",
+    "text": "No. Product information and calculator outputs are illustrative only and are not an approval, offer, or guarantee of eligibility. A lender representative must confirm final terms.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-002",
+    "title_hi": "क्या ये शर्तें पक्की हैं?",
+    "text_hi": "नहीं। प्रोडक्ट की जानकारी और कैलकुलेटर के नतीजे केवल उदाहरण के लिए हैं। ये मंज़ूरी, ऑफर या पात्रता की गारंटी नहीं हैं। अंतिम शर्तों की पुष्टि बैंक प्रतिनिधि को करनी होगी।"
+  },
+  {
+    "id": "FAQ-003",
+    "title": "How does an EMI estimate work?",
+    "text": "For a reducing-balance illustration, monthly interest is based on outstanding principal. The estimate is illustrative and not an offer.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-003",
+    "title_hi": "EMI का अनुमान कैसे काम करता है?",
+    "text_hi": "रिड्यूसिंग-बैलेंस के उदाहरण में हर महीने का ब्याज बकाया मूल राशि पर आधारित होता है। यह अनुमान केवल जानकारी के लिए है, लोन ऑफर नहीं।"
+  },
+  {
+    "id": "FAQ-004",
+    "title": "What happens after an enquiry?",
+    "text": "A staff member can review the enquiry summary, clarify questions, and explain next steps. An enquiry is not a lending decision.",
+    "status": "approved",
+    "effective_date": "2026-01-01",
+    "version": "1.0",
+    "product_id": null,
+    "source_id": "SYN-FAQ-004",
+    "title_hi": "पूछताछ के बाद क्या होता है?",
+    "text_hi": "हमारी टीम पूछताछ का सारांश देख सकती है, आपके सवाल स्पष्ट कर सकती है और आगे की प्रक्रिया बता सकती है। पूछताछ दर्ज होना लोन संबंधी निर्णय नहीं है।"
+  }
+]

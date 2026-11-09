@@ -1,0 +1,9 @@
+{
+  "name": "PrimeCapital",
+  "short_name": "PrimeCapital",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f6fa",
+  "theme_color": "#102a43",
+  "icons": []
+}

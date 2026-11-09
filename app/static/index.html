@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102b4c">
+  <meta name="description" content="PrimeCapital — a voice-first synthetic business loan enquiry demo.">
+  <title>PrimeCapital | Business Loan Assistant</title>
+
+  <style>
+    :root {
+      --navy: #102b4c;
+      --blue: #376bff;
+      --blue-dark: #194bd7;
+      --ink: #10234a;
+      --muted: #6b7b96;
+      --line: #dce6f5;
+      --bg: #f3f7fd;
+      --green: #0ca678;
+      --mint: #e7faf2;
+      --gold: #fff6e4;
+      --white: #fff;
+      --radius: 13px;
+      --shadow: 0 4px 20px rgba(22,55,91,.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.5 Inter, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    header {
+      background: var(--navy);
+      color: white;
+      min-height: 62px;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand { font-size: 19px; font-weight: 850; line-height: 1.3; }
+    .brand small { display: block; font-size: 11px; color: #d5e3f5; font-weight: 450; }
+    .toplinks { display: flex; gap: 14px; align-items: center; }
+    .toplinks a { color: white; font-size: 12px; font-weight: 650; }
+
+    .wrap {
+      max-width: 1440px;
+      margin: 18px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid #e3eaf4;
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: 26px; line-height: 1.2; margin-bottom: 8px; }
+    h2 { font-size: 16px; margin-bottom: 12px; }
+    h3 { font-size: 14px; margin-bottom: 6px; }
+
+    .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+    .muted { color: var(--muted); font-size: 11px; }
+    .helper { color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .eyebrow { color: #456ac0; font-size: 12px; font-weight: 750; }
+
+    .notice {
+      background: var(--gold);
+      border: 1px solid #f1dfb3;
+      border-radius: 9px;
+      padding: 12px;
+      color: #38455d;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .notice b { display: block; color: #273753; font-size: 12px; margin-bottom: 3px; }
+
+    .consentrow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .consentrow input { margin-top: 4px; accent-color: var(--blue); }
+    .consentrow label { font-size: 11px; }
+
+    input:not([type="checkbox"]), select, textarea {
+      width: 100%;
+      min-width: 0;
+      padding: 11px;
+      border: 1px solid #d6e1f0;
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(55,107,255,.12);
+    }
+
+    input[type="checkbox"] { accent-color: var(--blue); }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      background: var(--blue);
+      color: white;
+      font-weight: 700;
+      transition: background .15s;
+    }
+
+    button:hover:not(:disabled) { background: var(--blue-dark); }
+    button:focus-visible { outline: 3px solid #a9c1ff; outline-offset: 2px; }
+
+    .secondary { background: #edf3fc; color: #193d77; }
+    .secondary:hover:not(:disabled) { background: #dfeaff; color: #193d77; }
+    .quiet { background: white; color: #34518d; border: 1px solid var(--line); }
+    .quiet:hover:not(:disabled) { background: #f3f7fd; color: var(--navy); }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 3px 0 12px;
+    }
+
+    .section-title h2 { margin: 0; }
+    .tag { background: #edf3ff; color: #3157ae; border-radius: 5px; padding: 4px 7px; font-size: 10px; font-weight: 750; }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .category {
+      min-height: 104px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+      text-align: left;
+      box-shadow: none;
+    }
+
+    .category:hover { background: #f5f8ff; color: var(--ink); border-color: #b6caff; }
+    .category.selected { border: 2px solid var(--blue); padding: 11px; background: #f0f5ff; }
+    .category .emoji { font-size: 22px; display: block; margin-bottom: 5px; }
+    .category strong { display: block; font-size: 12px; }
+    .category span { display: block; color: var(--muted); font-size: 11px; font-weight: 450; line-height: 1.5; }
+
+    #chat {
+      height: 350px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      border: 1px solid #e3eaf4;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 14px 0;
+      background: white;
+      scroll-behavior: smooth;
+    }
+
+    #chat::-webkit-scrollbar { width: 7px; }
+    #chat::-webkit-scrollbar-thumb { background: #cbd7e8; border-radius: 8px; }
+
+    .bubble {
+      max-width: 94%;
+      padding: 11px 13px;
+      margin: 9px 0;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .user { margin-left: auto; background: #dce9ff; color: #173b7e; border-bottom-right-radius: 4px; }
+    .bot { margin-right: auto; background: #f0f4fa; color: #263a56; border-bottom-left-radius: 4px; }
+    .meta { margin-top: 7px; padding-top: 5px; border-top: 1px solid #dfe7f1; color: #71809a; font-size: 10px; }
+
+    .composer { display: flex; gap: 7px; align-items: stretch; }
+    .composer input { flex: 1; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .actions button { padding: 9px 11px; font-size: 11px; }
+
+    .mic-row { display: flex; justify-content: center; margin: 18px 0 6px; }
+    #micButton {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      font-size: 23px;
+      background: var(--blue);
+      box-shadow: 0 0 0 7px #edf3ff, 0 5px 20px #376bff38;
+    }
+    #micButton.recording { background: #e03131; box-shadow: 0 0 0 7px #fff0f0; }
+    .mic-label { text-align: center; font-size: 11px; color: var(--muted); }
+
+    #products { display: grid; gap: 0; }
+    .product { padding: 11px 3px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+    .product:last-child { border-bottom: 0; }
+    .product b { display: block; color: #243a65; font-size: 12px; line-height: 1.5; }
+    .product .muted { display: block; margin-top: 4px; line-height: 1.5; }
+
+    .quicklist { padding-left: 20px; display: grid; gap: 6px; margin: 10px 0; }
+    .quicklist li { font-size: 12px; }
+    .quicklist button {
+      padding: 1px 0;
+      background: transparent;
+      color: #243a65;
+      font-size: 12px;
+      font-weight: 450;
+      text-align: left;
+    }
+    .quicklist button:hover { background: transparent; color: var(--blue-dark); text-decoration: underline; }
+
+    .divider { height: 1px; background: var(--line); margin: 16px 0; }
+    .side-note { margin-top: 14px; padding: 12px; border-radius: 9px; background: #f1f6ff; font-size: 12px; line-height: 1.6; }
+
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .calculator-grid label { display: block; }
+    .calculator-grid input { margin-top: 5px; }
+    #emiResult { color: var(--green); font-size: 25px; font-weight: 850; overflow-wrap: anywhere; }
+
+    .document-list { display: grid; gap: 9px; }
+    .document-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px;
+      background: white;
+    }
+    .document-row .doc-icon { font-size: 20px; }
+    .document-row .doc-text { flex: 1; min-width: 0; }
+    .document-row strong { display: block; font-size: 12px; }
+    .document-row small { display: block; color: var(--muted); font-size: 10px; }
+    .document-row input { width: auto; }
+
+    footer {
+      max-width: 1440px;
+      margin: auto;
+      padding: 0 20px 20px;
+      color: var(--muted);
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 800px) {
+      .wrap { grid-template-columns: 1fr; padding: 0 12px; margin: 12px auto; gap: 12px; }
+      .panel { padding: 15px; }
+      header { padding: 12px 15px; }
+      h1 { font-size: 23px; }
+      #chat { height: 330px; }
+    }
+
+    @media (max-width: 450px) {
+      body { font-size: 13px; }
+      .wrap { padding: 0 9px; }
+      .panel { padding: 12px; }
+      h1 { font-size: 21px; }
+      .category-grid, .calculator-grid { grid-template-columns: 1fr; }
+      .composer { gap: 5px; }
+      .composer input { padding: 10px 8px; }
+      .composer button { padding: 9px 11px; }
+      .actions button { flex: 1 1 auto; }
+      .bubble { max-width: 98%; }
+      footer { flex-direction: column; padding: 0 12px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      PrimeCapital
+      <small>Evidence-grounded loan enquiry · Synthetic demo</small>
+    </div>
+    <nav class="toplinks" aria-label="Main navigation">
+      <a href="/staff">Staff dashboard →</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- BORROWER CONVERSATION -->
+    <section class="panel" aria-labelledby="pageHeading">
+      <div class="eyebrow">VOICE-FIRST BUSINESS LOAN ASSISTANT</div>
+      <h1 id="pageHeading">Ask about a business loan</h1>
+      <p class="sub">Tell us about your business and explore illustrative loan options.</p>
+
+      <div class="notice">
+        <b>AI assistant & consent</b>
+        Fictional lender demo. Answers and estimates are illustrative, not an offer
+        or lending decision. Do not enter identity or financial documents.
+        Continuing consents to processing your text for this demo.
+        <div class="consentrow">
+          <input id="consent" type="checkbox">
+          <label for="consent">I understand and consent.</label>
+          <select id="language" aria-label="Preferred language" style="width:auto;padding:5px">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="hinglish">Hinglish</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <h2>Tell us about your business</h2>
+        <span class="tag">STEP 1</span>
+      </div>
+
+      <div class="category-grid" id="businessCategories">
+        <button type="button" class="category" data-category="Kirana & Retail"
+                aria-pressed="false" onclick="selectBusiness('Kirana & Retail', this)">
+          <span class="emoji">🏪</span>
+          <strong>Kirana & Retail</strong>
+          <span>Shops, general stores, FMCG and retail trading</span>
+        </button>
+        <button type="button" class="category" data-category="Textiles & Manufacturing"
+                aria-pressed="false" onclick="selectBusiness('Textiles & Manufacturing', this)">
+          <span class="emoji">🧵</span>
+          <strong>Textiles & Manufacturing</strong>
+          <span>Garments, factories and small manufacturing</span>
+        </button>
+        <button type="button" class="category" data-category="Services & Repair"
+                aria-pressed="false" onclick="selectBusiness('Services & Repair', this)">
+          <span class="emoji">🛠️</span>
+          <strong>Services & Repair</strong>
+          <span>Repair shops, technicians and service businesses</span>
+        </button>
+        <button type="button" class="category" data-category="Other Business"
+                aria-pressed="false" onclick="selectBusiness('Other Business', this)">
+          <span class="emoji">🏢</span>
+          <strong>Other Business</strong>
+          <span>Choose this for another business type</span>
+        </button>
+      </div>
+
+      <div class="section-title">
+        <h2>Conversation</h2>
+        <span class="tag">STEP 2</span>
+      </div>
+
+      <div id="chat" role="log" aria-live="polite" aria-label="Chat messages">
+        <div class="bubble bot">
+          Namaste! 👋 Welcome to PrimeCapital.
+          I can help you explore synthetic demo loan products, understand
+          illustrative fees and eligibility criteria, estimate EMIs, and review
+          document checklists.
+
+          How can I help you grow your business today?
+        </div>
+      </div>
+
+      <form id="chatForm">
+        <div class="composer">
+          <input id="message" name="message" type="text"
+                 placeholder="Ask a question..." autocomplete="off"
+                 aria-label="Your question">
+          <button type="submit" id="sendButton">Send</button>
+        </div>
+      </form>
+
+      <div class="mic-row">
+        <button type="button" id="micButton" aria-label="Start voice input"
+                title="Start voice input">🎙️</button>
+      </div>
+      <p class="mic-label" id="micLabel">Tap the microphone to speak</p>
+
+      <div class="actions">
+        <button type="button" class="secondary" id="speakButton">🎙 Speak</button>
+        <button type="button" class="secondary" id="voiceReplyButton"
+                aria-pressed="false">🔊 Voice replies: off</button>
+        <button type="button" class="secondary" id="handoffButton">Talk to a person</button>
+        <button type="button" class="secondary" id="clearButton">Clear chat</button>
+      </div>
+
+      <p class="helper">
+        Speech recognition depends on browser support. Review the transcript before
+        sending. Do not provide Aadhaar numbers, bank credentials, or sensitive
+        financial documents in this demo.
+      </p>
+
+      <!-- EMI CALCULATOR -->
+      <div class="divider"></div>
+      <div class="section-title">
+        <h2>EMI calculator</h2>
+        <span class="tag">STEP 3</span>
+      </div>
+
+      <div class="calculator-grid">
+        <label>
+          Loan amount (₹)
+          <input id="emiAmount" type="number" min="1" value="200000">
+        </label>
+        <label>
+          Annual interest rate (%)
+          <input id="emiRate" type="number" min="0" max="100" step="0.01" value="12">
+        </label>
+        <label>
+          Tenure (months)
+          <input id="emiMonths" type="number" min="1" max="360" value="12">
+        </label>
+        <div>
+          <span class="muted">Estimated monthly EMI</span>
+          <div id="emiResult" aria-live="polite">₹17,770</div>
+        </div>
+      </div>
+
+      <button type="button" class="secondary" id="calculateEmiButton"
+              style="margin-top:12px">Calculate EMI</button>
+
+      <p class="helper">
+        Estimates use a standard reducing-balance calculation. Actual repayments
+        may differ due to lender terms, fees, taxes, and other charges.
+      </p>
+
+      <!-- DOCUMENT CHECKLIST -->
+      <div class="divider"></div>
+      <div class="section-title">
+        <h2>Document checklist</h2>
+        <span class="tag">STEP 4</span>
+      </div>
+
+      <p class="muted">Illustrative checklist only. Requirements depend on the product and case.</p>
+      <div class="document-list" id="documentChecklist">
+        <label class="document-row">
+          <span class="doc-icon">📄</span>
+          <span class="doc-text"><strong>Identity and address proof</strong><small>Confirm acceptable documents with the lender.</small></span>
+          <input type="checkbox" aria-label="Identity and address proof ready">
+        </label>
+        <label class="document-row">
+          <span class="doc-icon">📄</span>
+          <span class="doc-text"><strong>Business registration proof</strong><small>Where applicable.</small></span>
+          <input type="checkbox" aria-label="Business registration proof ready">
+        </label>
+        <label class="document-row">
+          <span class="doc-icon">📄</span>
+          <span class="doc-text"><strong>Business bank statement</strong><small>Period and format to be confirmed with the lender.</small></span>
+          <input type="checkbox" aria-label="Business bank statement ready">
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="secondary" id="copyChecklistButton">Copy checklist</button>
+        <button type="button" class="quiet" id="telegramButton">Open Telegram</button>
+      </div>
+      <p class="helper">
+        Telegram opens the PrimeCapital assistant bot. This demo does not upload documents
+        or automatically submit a loan application.
+      </p>
+    </section>
+
+    <!-- PRODUCT CATALOGUE -->
+    <aside class="panel" aria-labelledby="catalogueHeading">
+      <div class="section-title">
+        <h2 id="catalogueHeading">Demo products</h2>
+        <span class="tag">SYNTHETIC</span>
+      </div>
+      <p class="sub">Synthetic values only. Not official SBI products or lending terms.</p>
+
+      <div id="products" aria-live="polite">
+        <p class="muted">Loading demo products...</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">
+        <h2>Try asking</h2>
+      </div>
+      <ul class="quicklist">
+        <li><button type="button" onclick="quickAsk('What are the fees for Working Capital Flex?')">What are the fees for Working Capital Flex?</button></li>
+        <li><button type="button" onclick="quickAsk('What documents do I need for Equipment Growth Loan?')">What documents do I need for Equipment Growth Loan?</button></li>
+        <li><button type="button" onclick="quickAsk('Calculate EMI for ₹200000 over 24 months for Working Capital Flex')">Calculate EMI for ₹200000 over 24 months for Working Capital Flex</button></li>
+        <li><button type="button" onclick="quickAsk('What does illustrative mean?')">What does illustrative mean?</button></li>
+        <li><button type="button" onclick="quickAsk('What is the minimum annual turnover required?')">What is the minimum annual turnover required?</button></li>
+      </ul>
+
+      <div class="side-note">
+        <strong>💡 Your information matters</strong>
+        <p style="margin:6px 0 0">
+          This interface is a training demo. Do not enter personal identity
+          information or upload sensitive financial records.
+        </p>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <span>Powered by Gnani AI 🇮🇳 · PrimeCapital demo</span>
+    <span>Synthetic data · No loan approval or financial advice</span>
+  </footer>
+
+  <script>
+      function getSessionId() {
+        const key = "primecapital_session_id";
+        let sessionId = sessionStorage.getItem(key) || sessionStorage.getItem("loansaathi_session_id");
+
+        if (!sessionId) {
+          sessionId = crypto.randomUUID();
+          sessionStorage.setItem(key, sessionId);
+        }
+
+        return sessionId;
+      }
+    "use strict";
+
+    /*
+     * API integration notes:
+     * This page uses the existing project routes where the request format
+     * is known. Verify route contracts in app/main.py before changing them.
+     */
+
+    const API = {
+      products: "/api/products",
+      chat: "/api/chat",
+      transcribe: "/api/speech/transcribe",
+      synthesize: "/api/speech/synthesize",
+      handoff: "/api/handoff"
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    let selectedBusinessCategory = "";
+    let voiceRepliesEnabled = false;
+    let recognition = null;
+    let isRecording = false;
+
+    function addMessage(text, role = "bot", evidence = "") {
+      const chat = $("#chat");
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${role}`;
+      bubble.textContent = String(text ?? "");
+
+      if (evidence) {
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = `Evidence: ${evidence}`;
+        bubble.appendChild(meta);
+      }
+
+      chat.appendChild(bubble);
+      chat.scrollTop = chat.scrollHeight;
+      return bubble;
+    }
+
+    function setBusy(busy) {
+      $("#sendButton").disabled = busy;
+      $("#sendButton").textContent = busy ? "..." : "Send";
+    }
+
+    function selectBusiness(category, button) {
+      selectedBusinessCategory = category;
+
+      document.querySelectorAll(".category").forEach((item) => {
+        const selected = item.dataset.category === category;
+        item.classList.toggle("selected", selected);
+        item.setAttribute("aria-pressed", String(selected));
+      });
+
+      $("#message").value =
+        `My business category is ${category}. Please suggest suitable synthetic demo loan options.`;
+      $("#message").focus();
+    }
+
+    function quickAsk(question) {
+      if (!$("#consent").checked) {
+        addMessage("Please accept the demo consent notice before sending a question.", "bot");
+        $("#consent").focus();
+        return;
+      }
+      $("#message").value = question;
+      $("#message").focus();
+    }
+
+    async function sendChatMessage(event) {
+      if (event) event.preventDefault();
+
+      const input = $("#message");
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      if (!$("#consent").checked) {
+        addMessage("Please read and accept the demo consent notice before continuing.", "bot");
+        $("#consent").focus();
+        return;
+      }
+
+      addMessage(message, "user");
+      input.value = "";
+      setBusy(true);
+
+      const pending = addMessage("Let me check the available demo information...", "bot");
+
+      try {
+        /*
+         * This preserves the existing backend contract commonly used by
+         * this project. If app/main.py defines a different request schema,
+         * adjust this payload to match it exactly.
+         */
+        const response = await fetch(API.chat, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+          session_id: getSessionId(),
+          message,
+          consent: true,
+          language: $("#language").value,
+          business_category: selectedBusinessCategory || null
+        })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        console.log("Chat API status:", response.status);
+        console.log("Chat API response body:", data);
+
+        if (!response.ok) {
+          const detail = data.detail ?? data.error;
+          const errorText =
+            typeof detail === "string"
+              ? detail
+              : detail != null
+                ? JSON.stringify(detail)
+                : `HTTP ${response.status} ${response.statusText}`;
+
+          throw new Error(errorText);
+        }
+
+        pending.remove();
+
+        // app/main.py returns the answer in `text`, with citations in `sources`.
+        const answer =
+          data.text ??
+          data.answer ??
+          data.response ??
+          data.reply ??
+          data.message ??
+          (typeof data === "string" ? data : null);
+
+        if (typeof answer !== "string" || !answer.trim()) {
+          console.error("Unexpected chat response:", data);
+          addMessage(
+            "The server responded, but no answer text was found. Check the backend response in the browser console.",
+            "bot"
+          );
+          return;
+        }
+
+        const sourceRecords = Array.isArray(data.sources) ? data.sources : [];
+        const sourceIds = sourceRecords
+          .map((source) => {
+            if (typeof source === "string") return source;
+            return source?.source_id || source?.id || source?.title || "";
+          })
+          .filter(Boolean);
+        const evidence = data.evidence
+          ? (Array.isArray(data.evidence) ? data.evidence.join(", ") : data.evidence)
+          : sourceIds.length
+            ? sourceIds.join(", ")
+            : data.source_id || "";
+
+        addMessage(answer, "bot", evidence);
+
+        if (voiceRepliesEnabled) {
+          await speakResponse(answer);
+        }
+      } catch (error) {
+        pending.remove();
+        console.error("Chat request failed:", error);
+
+        addMessage(
+          `Chat request failed: ${error.message || "Unknown error"}. Check the browser console and backend logs.`,
+          "bot"
+        );
+      } finally {
+        setBusy(false);
+        input.focus();
+      }
+    }
+
+    async function loadProducts() {
+      const container = $("#products");
+      container.replaceChildren();
+
+      try {
+        const response = await fetch(API.products);
+        if (!response.ok) throw new Error(`Products request failed (${response.status})`);
+
+        const products = await response.json();
+        if (!Array.isArray(products) || products.length === 0) {
+          container.textContent = "No demo products are currently available.";
+          return;
+        }
+
+        products.forEach((product) => {
+          const card = document.createElement("div");
+          card.className = "product";
+
+          const name = document.createElement("b");
+          name.textContent = product.name || product.product_name || "Demo loan product";
+
+          const details = document.createElement("span");
+          details.className = "muted";
+
+          const min = product.min_amount ?? product.min_amount_inr;
+          const max = product.max_amount ?? product.max_amount_inr;
+          const rate = product.annual_interest_rate ?? product.indicative_annual_rate_pct;
+
+          const amountText = min != null && max != null
+            ? `${formatINR(min)}–${formatINR(max)}`
+            : "Amount range unavailable";
+
+          let rateText = "Rate unavailable";
+          if (rate != null && Number.isFinite(Number(rate))) {
+            const normalizedRate = Number(rate) <= 1
+              ? Number(rate) * 100
+              : Number(rate);
+            rateText = `${normalizedRate.toFixed(2)}% illustrative annual rate`;
+          }
+
+          details.textContent = `${amountText} · ${rateText}`;
+          card.append(name, details);
+          container.appendChild(card);
+        });
+      } catch (error) {
+        console.error("Product load failed:", error);
+        container.textContent = "Unable to load demo products. Check the backend and try refreshing.";
+      }
+    }
+
+    function formatINR(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return String(value);
+      return number.toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      });
+    }
+
+    function calculateDemoEMI() {
+      const principal = Number($("#emiAmount").value);
+      const annualRate = Number($("#emiRate").value);
+      const months = Number($("#emiMonths").value);
+      const result = $("#emiResult");
+
+      if (
+        !Number.isFinite(principal) || principal <= 0 ||
+        !Number.isFinite(annualRate) || annualRate < 0 || annualRate > 100 ||
+        !Number.isInteger(months) || months < 1 || months > 360
+      ) {
+        result.textContent = "Enter valid values";
+        return;
+      }
+
+      const monthlyRate = annualRate / 1200;
+      const emi = monthlyRate === 0
+        ? principal / months
+        : principal * monthlyRate * Math.pow(1 + monthlyRate, months) /
+          (Math.pow(1 + monthlyRate, months) - 1);
+
+      result.textContent = emi.toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      });
+    }
+
+    async function speakResponse(text) {
+      /*
+       * The backend's TTS response format must be confirmed in app/main.py.
+       * This fallback uses browser speech synthesis if available.
+       */
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const lang = $("#language").value;
+        utterance.lang = lang === "hi" ? "hi-IN" : "en-IN";
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
+
+      addMessage("Speech playback is not supported in this browser.", "bot");
+    }
+
+    function setupSpeechRecognition() {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        $("#micLabel").textContent =
+          "Speech recognition is not supported by this browser. You can type your question.";
+        $("#micButton").disabled = true;
+        $("#speakButton").disabled = true;
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = "en-IN";
+
+      recognition.onstart = () => {
+        isRecording = true;
+        $("#micButton").classList.add("recording");
+        $("#micButton").textContent = "■";
+        $("#micLabel").textContent = "Listening... speak now";
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        $("#message").value = transcript;
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Browser speech recognition error:", event.error);
+        $("#micLabel").textContent = `Speech input error: ${event.error}. You can type instead.`;
+      };
+
+      recognition.onend = () => {
+        isRecording = false;
+        $("#micButton").classList.remove("recording");
+        $("#micButton").textContent = "🎙️";
+        $("#micLabel").textContent = "Review the transcript, then press Send";
+        $("#message").focus();
+      };
+    }
+
+    function toggleMicrophone() {
+      if (!recognition) {
+        setupSpeechRecognition();
+        if (!recognition) return;
+      }
+
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.lang = $("#language").value === "hi"
+          ? "hi-IN"
+          : "en-IN";
+
+        try {
+          recognition.start();
+        } catch (error) {
+          console.warn("Could not start recognition:", error);
+          $("#micLabel").textContent = "Please try the microphone again.";
+        }
+      }
+    }
+
+    async function requestHumanHandoff() {
+      if (!$("#consent").checked) {
+        addMessage("Please accept the demo consent notice before requesting a handoff.", "bot");
+        return;
+      }
+
+      try {
+        const response = await fetch(API.handoff, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: "User requested a human handoff from the PrimeCapital demo.",
+            consent: true,
+            business_category: selectedBusinessCategory || null
+          })
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.detail || `Handoff request failed (${response.status})`);
+        }
+
+        const data = await response.json().catch(() => ({}));
+        addMessage(
+          data.message || data.answer ||
+          "Your request was sent to the demo handoff endpoint. Please verify the staff dashboard for the enquiry.",
+          "bot"
+        );
+      } catch (error) {
+        console.error("Handoff failed:", error);
+        addMessage(
+          "The handoff endpoint is not available or could not accept the request. Please contact the demo team directly.",
+          "bot"
+        );
+      }
+    }
+
+    async function copyChecklist() {
+      const checked = [...document.querySelectorAll("#documentChecklist input:checked")].length;
+      const items = [...document.querySelectorAll("#documentChecklist .doc-text strong")]
+        .map((node) => node.textContent);
+
+      const text = [
+        "PrimeCapital — Illustrative document checklist",
+        ...items.map((item) => `${item}: ${[...document.querySelectorAll("#documentChecklist .doc-text strong")].some((node, i) => node.textContent === item && document.querySelectorAll("#documentChecklist input")[i].checked) ? "Ready" : "Not marked ready"}`),
+        "",
+        "Synthetic demo only. Confirm actual document requirements with the lender."
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(text);
+        addMessage("The illustrative checklist has been copied. It has not been submitted to a lender.", "bot");
+      } catch (error) {
+        addMessage("Clipboard access is unavailable. Please copy the checklist manually.", "bot");
+      }
+    }
+
+    function openTelegramBot() {
+      window.open("https://t.me/PrimeCapital_Assistant_Bot", "_blank", "noopener,noreferrer");
+    }
+
+    function clearChat() {
+      $("#chat").replaceChildren();
+      addMessage(
+        "Namaste! Welcome to PrimeCapital. Ask me about synthetic demo loan products, fees, eligibility, documents, or EMI estimates.",
+        "bot"
+      );
+    }
+
+    $("#chatForm").addEventListener("submit", sendChatMessage);
+    $("#calculateEmiButton").addEventListener("click", calculateDemoEMI);
+    $("#micButton").addEventListener("click", toggleMicrophone);
+    $("#speakButton").addEventListener("click", toggleMicrophone);
+    $("#handoffButton").addEventListener("click", requestHumanHandoff);
+    $("#copyChecklistButton").addEventListener("click", copyChecklist);
+    $("#telegramButton").addEventListener("click", openTelegramBot);
+    $("#clearButton").addEventListener("click", clearChat);
+
+    $("#voiceReplyButton").addEventListener("click", () => {
+      voiceRepliesEnabled = !voiceRepliesEnabled;
+      $("#voiceReplyButton").setAttribute("aria-pressed", String(voiceRepliesEnabled));
+      $("#voiceReplyButton").textContent = voiceRepliesEnabled
+        ? "🔊 Voice replies: on"
+        : "🔊 Voice replies: off";
+
+      if (!voiceRepliesEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    });
+
+    $("#language").addEventListener("change", () => {
+      if (recognition) {
+        recognition.lang = $("#language").value === "hi" ? "hi-IN" : "en-IN";
+      }
+    });
+
+    $("#message").addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        $("#message").value = "";
+      }
+    });
+
+    setupSpeechRecognition();
+    calculateDemoEMI();
+    loadProducts();
+  </script>
+</body>
+</html>
